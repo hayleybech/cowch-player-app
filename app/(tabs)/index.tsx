@@ -61,14 +61,20 @@ export default function HomeScreen() {
           <Text className="font-bold text-lg">Enter a username</Text>
           <TextInput onChangeText={(value) => setUsername(value)} className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded" />
 
-          <View className="mb-4">
+          <View className="mb-16">
             <Button title="Connect" onPress={connect} color="#9ae600" disabled={!hostId || !username}  />
           </View>
 
           <View className="flex gap-2">
             <Button title="Up" onPress={() => move('up')} color="#9ae600" disabled={!!connRef.current} />
-            <Button title="Left" onPress={() => move('left')} color="#9ae600" disabled={!!connRef.current} />
-            <Button title="Right" onPress={() => move('right')} color="#9ae600" disabled={!!connRef.current} />
+            <View className="flex gap-2 flex-row flex-nowrap justify-between">
+              <View className="grow">
+                <Button title="Left" onPress={() => move('left')} color="#9ae600" disabled={!!connRef.current} />
+              </View>
+              <View className="grow">
+                <Button title="Right" onPress={() => move('right')} color="#9ae600" disabled={!!connRef.current} />
+              </View>
+            </View>
             <Button title="Down" onPress={() => move('down')} color="#9ae600" disabled={!!connRef.current} />
           </View>
 
