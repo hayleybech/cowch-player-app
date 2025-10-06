@@ -5,11 +5,15 @@ import { Image } from 'expo-image';
 import {useCallback, useEffect, useRef, useState} from "react";
 import Peer, {DataConnection} from "peerjs";
 
+type ConnectionStatus = 'initial'|'open' |'closed';
+
 export default function HomeScreen() {
   const [hostId, setHostId] = useState<string>();
   const [username, setUsername] = useState<string>();
   const peerRef = useRef<Peer>(null);
   const connRef = useRef<DataConnection>(null);
+
+  const [status, setStatus] = useState<ConnectionStatus>('initial');
 
   useEffect(() => {
     const peer = new Peer();
@@ -33,7 +37,11 @@ export default function HomeScreen() {
         type: 'join',
         payload: username,
       });
+
+      setStatus('open');
     });
+
+    conn.on('close', () => setStatus('closed'))
 
 
   }, [hostId, username]);
@@ -62,20 +70,20 @@ export default function HomeScreen() {
           <TextInput onChangeText={(value) => setUsername(value)} className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded" />
 
           <View className="mb-16">
-            <Button title="Connect" onPress={connect} color="#9ae600" disabled={!hostId || !username}  />
+            <Button title="Connect" onPress={connect} color="#9ae600" disabled={(!hostId || !username) || status ==='open'}  />
           </View>
 
           <View className="flex gap-2">
-            <Button title="Up" onPress={() => move('up')} color="#9ae600" disabled={!!connRef.current} />
+            <Button title="Up" onPress={() => move('up')} color="#9ae600" disabled={!connRef.current} />
             <View className="flex gap-2 flex-row flex-nowrap justify-between">
               <View className="grow">
-                <Button title="Left" onPress={() => move('left')} color="#9ae600" disabled={!!connRef.current} />
+                <Button title="Left" onPress={() => move('left')} color="#9ae600" disabled={!connRef.current} />
               </View>
               <View className="grow">
-                <Button title="Right" onPress={() => move('right')} color="#9ae600" disabled={!!connRef.current} />
+                <Button title="Right" onPress={() => move('right')} color="#9ae600" disabled={!connRef.current} />
               </View>
             </View>
-            <Button title="Down" onPress={() => move('down')} color="#9ae600" disabled={!!connRef.current} />
+            <Button title="Down" onPress={() => move('down')} color="#9ae600" disabled={!connRef.current} />
           </View>
 
           {/*<Text>*/}
