@@ -6,6 +6,7 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import Peer, {DataConnection} from "peerjs";
 
 type ConnectionStatus = 'initial'|'open' |'closed';
+type GameNotification = { type: 'paused' } | { type: 'resumed' };
 
 export default function HomeScreen() {
   const [hostId, setHostId] = useState<string>();
@@ -13,11 +14,16 @@ export default function HomeScreen() {
   const peerRef = useRef<Peer>(null);
   const connRef = useRef<DataConnection>(null);
 
-  const [status, setStatus] = useState<ConnectionStatus>('initial');
+  const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
+  const [isPaused, setIsPaused] = useState<boolean>(true);
 
   useEffect(() => {
     const peer = new Peer();
     peerRef.current = peer;
+
+    peer.on('disconnected', (id) => console.log('peer disconnected: ', id));
+    peer.on('close', () => console.log('peer closed'));
+    peer.on('error', (error) => console.log('peer error', error));
 
     return () => {
       peer.destroy();
@@ -29,6 +35,8 @@ export default function HomeScreen() {
       return;
     }
 
+    console.log('PEER', peerRef);
+
     const conn = peerRef.current.connect(hostId);
 
     conn.on('open', function () {
@@ -38,13 +46,35 @@ export default function HomeScreen() {
         payload: username,
       });
 
-      setStatus('open');
+      setConnStatus('open');
+
+
+      conn.on('data', (data: unknown) => {
+        const action = data as GameNotification;
+
+        if(action.type === 'paused') {
+          setIsPaused(true);
+        }
+        if(action.type === 'resumed') {
+          setIsPaused(false);
+        }
+      })
     });
 
-    conn.on('close', () => setStatus('closed'))
+    conn.on('close', () => setConnStatus('closed'))
 
 
   }, [hostId, username]);
+
+  const requestPause = useCallback(() => {
+    if (!connRef.current) {
+      return;
+    }
+
+    connRef.current.send({
+      type: 'pause',
+    })
+  }, [])
 
   type Direction = 'up'|'down'|'right'|'left';
   const move = useCallback((direction: Direction) => {
@@ -70,20 +100,24 @@ export default function HomeScreen() {
           <TextInput onChangeText={(value) => setUsername(value)} className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded" />
 
           <View className="mb-16">
-            <Button title="Connect" onPress={connect} color="#9ae600" disabled={(!hostId || !username) || status ==='open'}  />
+            <Button title="Connect" onPress={connect} color="#9ae600" disabled={(!hostId || !username) || connStatus ==='open'}  />
           </View>
 
-          <View className="flex gap-2">
-            <Button title="Up" onPress={() => move('up')} color="#9ae600" disabled={!connRef.current} />
+          <View className="flex gap-2 mb-16">
+            <Button title="Up" onPress={() => move('up')} color="#9ae600" disabled={!connRef.current || isPaused} />
             <View className="flex gap-2 flex-row flex-nowrap justify-between">
               <View className="grow">
-                <Button title="Left" onPress={() => move('left')} color="#9ae600" disabled={!connRef.current} />
+                <Button title="Left" onPress={() => move('left')} color="#9ae600" disabled={!connRef.current || isPaused} />
               </View>
               <View className="grow">
-                <Button title="Right" onPress={() => move('right')} color="#9ae600" disabled={!connRef.current} />
+                <Button title="Right" onPress={() => move('right')} color="#9ae600" disabled={!connRef.current || isPaused} />
               </View>
             </View>
-            <Button title="Down" onPress={() => move('down')} color="#9ae600" disabled={!connRef.current} />
+            <Button title="Down" onPress={() => move('down')} color="#9ae600" disabled={!connRef.current || isPaused} />
+          </View>
+
+          <View className="mb-16">
+            <Button title={isPaused ? 'Resume' : 'Pause'} onPress={requestPause} color="#9ae600" disabled={!connRef.current} />
           </View>
 
           {/*<Text>*/}
