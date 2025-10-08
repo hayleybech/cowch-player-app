@@ -37,7 +37,7 @@ export default function HomeScreen() {
 
     console.log('PEER', peerRef);
 
-    const conn = peerRef.current.connect(hostId);
+    const conn = peerRef.current.connect(`COWCH-${hostId}`);
 
     conn.on('open', function () {
       connRef.current = conn;
@@ -93,10 +93,10 @@ export default function HomeScreen() {
         <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]" />
 
         <View>
-          <Text className="font-bold text-lg">Enter the host ID</Text>
+          <Text className="font-bold text-lg">Lobby Code</Text>
           <TextInput onChangeText={(value) => setHostId(value)} className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded" />
 
-          <Text className="font-bold text-lg">Enter a username</Text>
+          <Text className="font-bold text-lg">Username</Text>
           <TextInput onChangeText={(value) => setUsername(value)} className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded" />
 
           <View className="mb-16">
