@@ -1,9 +1,10 @@
-import {Button, ScrollView, Text, TextInput, View} from 'react-native';
+import {ScrollView, Text, TextInput, View} from 'react-native';
 import "@/assets/css/global.css"
 
 import { Image } from 'expo-image';
 import {useCallback, useEffect, useRef, useState} from "react";
 import Peer, {DataConnection} from "peerjs";
+import {Button} from "@/components/ui/Button";
 
 type ConnectionStatus = 'initial'|'open' |'closed';
 type GameNotification = { type: 'paused' } | { type: 'resumed' };
@@ -99,25 +100,39 @@ export default function HomeScreen() {
           <Text className="font-bold text-lg">Username</Text>
           <TextInput onChangeText={(value) => setUsername(value)} className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded" />
 
+          <View className="mb-8">
+            <Button onPress={connect} disabled={(!hostId || !username) || connStatus ==='open'}>
+                Connect
+            </Button>
+          </View>
+
+
           <View className="mb-16">
-            <Button title="Connect" onPress={connect} color="#9ae600" disabled={(!hostId || !username) || connStatus ==='open'}  />
+            <Button onPress={requestPause} disabled={!connRef.current}>
+              {isPaused ? 'Resume' : 'Pause'}
+            </Button>
           </View>
 
           <View className="flex gap-2 mb-16">
-            <Button title="Up" onPress={() => move('up')} color="#9ae600" disabled={!connRef.current || isPaused} />
+            <Button onPress={() => move('up')} disabled={!connRef.current || isPaused} className="h-32">
+              Up
+            </Button>
             <View className="flex gap-2 flex-row flex-nowrap justify-between">
               <View className="grow">
-                <Button title="Left" onPress={() => move('left')} color="#9ae600" disabled={!connRef.current || isPaused} />
+
+                <Button onPress={() => move('left')} disabled={!connRef.current || isPaused} className="h-32">
+                    Left
+                </Button>
               </View>
               <View className="grow">
-                <Button title="Right" onPress={() => move('right')} color="#9ae600" disabled={!connRef.current || isPaused} />
+                <Button onPress={() => move('right')} disabled={!connRef.current || isPaused} className="h-32">
+                    Right
+                </Button>
               </View>
             </View>
-            <Button title="Down" onPress={() => move('down')} color="#9ae600" disabled={!connRef.current || isPaused} />
-          </View>
-
-          <View className="mb-16">
-            <Button title={isPaused ? 'Resume' : 'Pause'} onPress={requestPause} color="#9ae600" disabled={!connRef.current} />
+            <Button onPress={() => move('down')} disabled={!connRef.current || isPaused} className="h-32">
+                Down
+            </Button>
           </View>
 
           {/*<Text>*/}
