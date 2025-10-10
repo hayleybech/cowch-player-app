@@ -33,3 +33,7 @@ npx expo export --platform web
 ```bash
 eas deploy
 ```
+4. Deploy production
+```bash
+eas deploy --prod
+```
