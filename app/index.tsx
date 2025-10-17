@@ -1,4 +1,4 @@
-import {ScrollView, Text, TextInput, View} from 'react-native';
+import {Pressable, ScrollView, Text, TextInput, View} from 'react-native';
 import "@/assets/css/global.css"
 
 import {Image} from 'expo-image';
@@ -7,12 +7,15 @@ import Peer from "peerjs";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
 import {ScreenPropsContext} from "@/app/_layout";
+import classNames from "classnames";
+import {CowBreed} from "@/app/cooow";
 
 type ConnectionStatus = 'initial' | 'open' | 'closed';
 
 export default function LobbyScreen() {
     const [hostId, setHostId] = useState<string>();
     const [username, setUsername] = useState<string>();
+    const [breed, setBreed] = useState<CowBreed>('highland');
 
     const props = useContext(ScreenPropsContext);
 
@@ -48,7 +51,7 @@ export default function LobbyScreen() {
             props.connRef.current = conn;
             conn.send({
                 type: 'join',
-                payload: username,
+                payload: {username, breed},
             });
 
             setConnStatus('open');
@@ -64,7 +67,7 @@ export default function LobbyScreen() {
         })
 
 
-    }, [hostId, props.connRef, props.onDataRef, props.peerRef, router, username]);
+    }, [breed, hostId, props.connRef, props.onDataRef, props.peerRef, router, username]);
 
 
     return (
@@ -81,6 +84,43 @@ export default function LobbyScreen() {
                     <TextInput onChangeText={(value) => setUsername(value)}
                                className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
 
+                    <View className="grid grid-cols-2 gap-2 mb-8 p-1 w-full">
+                        {[
+                            {
+                                id: 'holstein_friesian',
+                                img: require('@/assets/images/holstein-friesian-side.png'),
+                                name: 'Holstein Friesian',
+                            },
+                            {
+                                id: 'hereford',
+                                img: require('@/assets/images/hereford-side.png'),
+                                name: 'Hereford',
+                            },
+                            {
+                                id: 'angus',
+                                img: require('@/assets/images/angus-side.png'),
+                                name: 'Angus',
+                            },
+                            {
+                                id: 'highland',
+                                img: require('@/assets/images/highland-side.png'),
+                                name: 'Highland',
+                            },
+                        ].map(({id, img, name}) => (
+                            <Pressable
+                                key={id}
+                                onPress={() => setBreed(id as CowBreed)}
+                                className={classNames(
+                                    'flex flex-col gap-2 border-2 p-2',
+                                    id === breed ? 'border-neutral-900' : 'border-transparent',
+                                )}>
+                                <Image source={img}
+                                       className="aspect-[2/1] w-full shrink"/>
+                                <Text className="font-bold">{name}</Text>
+                            </Pressable>
+                        ))}
+                    </View>
+
                     <View className="mb-8">
                         <Button onPress={connect} disabled={(!hostId || !username) || connStatus === 'open'}>
                             Connect
@@ -91,5 +131,6 @@ export default function LobbyScreen() {
             </View>
 
         </ScrollView>
-    );
+    )
+        ;
 }

@@ -6,6 +6,7 @@ import {useCallback, useContext, useEffect, useState} from "react";
 import {Button} from "@/components/ui/Button";
 import {ScreenPropsContext} from "@/app/_layout";
 
+export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
 type Direction = 'up' | 'down' | 'right' | 'left';
 type ConnectionStatus = 'initial' | 'open' | 'closed';
 type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'changed_direction', payload: Direction };
