@@ -16,10 +16,9 @@ export default function LobbyScreen() {
     const [hostId, setHostId] = useState<string>();
     const [username, setUsername] = useState<string>();
     const [breed, setBreed] = useState<CowBreed>('highland');
+    const [availableBreeds, setAvailableBreeds] = useState<string[]>(['holstein-friesian', 'hereford', 'angus', 'highland']);
 
     const props = useContext(ScreenPropsContext);
-    const {width, height} = useWindowDimensions();
-    const isLandscape = width > height;
 
     const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
 
@@ -42,6 +41,39 @@ export default function LobbyScreen() {
         };
     }, [props.peerRef]);
 
+    useEffect(() => {
+        props.onDataCallbackRef.current = (data: any) => {
+            if (data?.type === 'player_joined') {
+                const newAvailableBreeds = data.payload as string[];
+                setAvailableBreeds(newAvailableBreeds);
+
+                // Reset breed if no longer available
+                setBreed((currentBreed) => {
+                    if (!newAvailableBreeds.includes(currentBreed)) {
+                        if (newAvailableBreeds.length > 0) {
+                            return newAvailableBreeds[0] as CowBreed;
+                        }
+                    }
+                    return currentBreed;
+                });
+            }
+            if (data?.type === 'joined') {
+                router.navigate('/cooow');
+            }
+        };
+    }, [props.onDataCallbackRef, router]);
+
+    const join = useCallback(() => {
+        if (!props.connRef.current || !username || !breed) {
+            return;
+        }
+
+        props.connRef.current.send({
+            type: 'join',
+            payload: {breed},
+        });
+    }, [breed, props.connRef, username]);
+
     const connect = useCallback(() => {
         if (!props.peerRef?.current || !hostId || !username) {
             return;
@@ -51,16 +83,14 @@ export default function LobbyScreen() {
 
         conn.on('open', function () {
             props.connRef.current = conn;
+            conn.on('data', props.onDataRef.current);
+
             conn.send({
-                type: 'join',
-                payload: {username, breed},
-            });
+                type: 'connect',
+                payload: {username},
+            })
 
             setConnStatus('open');
-
-            router.navigate('/cooow');
-
-            conn.on('data', props.onDataRef.current);
         });
 
         conn.on('close', () => {
@@ -69,13 +99,14 @@ export default function LobbyScreen() {
         })
 
 
-    }, [breed, hostId, props.connRef, props.onDataRef, props.peerRef, router, username]);
+    }, [hostId, props.connRef, props.onDataRef, props.peerRef, router, username]);
 
 
     return (
-        <ScrollView className="bg-white">
-            <View className={classNames('px-4 py-8 flex gap-8', isLandscape ? 'flex-row' : 'flex-col')}>
-                <View className="flex-col grow">
+        <View className="bg-white flex-1">
+            {connStatus !== 'open' && (
+            <View className="flex justify-center items-center h-full">
+                <View className="flex-col w-1/2">
                     <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
 
                     <Text className="font-bold text-lg">Lobby Code</Text>
@@ -85,11 +116,19 @@ export default function LobbyScreen() {
                     <Text className="font-bold text-lg">Username</Text>
                     <TextInput onChangeText={(value) => setUsername(value)}
                                className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
+
+                    <View className="mb-8">
+                        <Button onPress={connect} disabled={!hostId || !username}>
+                            Connect
+                        </Button>
+                    </View>
                 </View>
+            </View>)}
 
-                <View className="grow">
-
-                    <View className="grid grid-cols-2 gap-2 mb-8 p-1 w-full">
+            {connStatus === 'open' && (
+            <View className="flex justify-center items-center h-full p-4">
+                <View className="w-full h-full shrink flex justify-center">
+                    <View className="grid grid-cols-4 gap-2 mb-8 p-1 w-full">
                         {[
                             {
                                 id: 'holstein_friesian',
@@ -114,10 +153,12 @@ export default function LobbyScreen() {
                         ].map(({id, img, name}) => (
                             <Pressable
                                 key={id}
+                                disabled={!availableBreeds.includes(id)}
                                 onPress={() => setBreed(id as CowBreed)}
                                 className={classNames(
                                     'flex flex-col gap-2 border-2 p-2',
                                     id === breed ? 'border-neutral-900' : 'border-transparent',
+                                    !availableBreeds.includes(id) && 'opacity-20'
                                 )}>
                                 <Image source={img}
                                        className="aspect-[2/1] w-full shrink"/>
@@ -127,15 +168,15 @@ export default function LobbyScreen() {
                     </View>
 
                     <View className="mb-8">
-                        <Button onPress={connect} disabled={(!hostId || !username) || connStatus === 'open'}>
-                            Connect
+                        <Button onPress={join}>
+                            Join
                         </Button>
                     </View>
                 </View>
-
             </View>
+            )}
 
-        </ScrollView>
+        </View>
     )
         ;
 }
