@@ -1,4 +1,4 @@
-import {Pressable, ScrollView, Text, TextInput, View} from 'react-native';
+import {Pressable, ScrollView, Text, TextInput, useWindowDimensions, View} from 'react-native';
 import "@/assets/css/global.css"
 
 import {Image} from 'expo-image';
@@ -18,6 +18,8 @@ export default function LobbyScreen() {
     const [breed, setBreed] = useState<CowBreed>('highland');
 
     const props = useContext(ScreenPropsContext);
+    const {width, height} = useWindowDimensions();
+    const isLandscape = width > height;
 
     const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
 
@@ -72,10 +74,10 @@ export default function LobbyScreen() {
 
     return (
         <ScrollView className="bg-white">
-            <View className="px-4 py-8 flex gap-8">
-                <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+            <View className={classNames('px-4 py-8 flex gap-8', isLandscape ? 'flex-row' : 'flex-col')}>
+                <View className="flex-col grow">
+                    <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
 
-                <View>
                     <Text className="font-bold text-lg">Lobby Code</Text>
                     <TextInput onChangeText={(value) => setHostId(value)}
                                className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
@@ -83,6 +85,9 @@ export default function LobbyScreen() {
                     <Text className="font-bold text-lg">Username</Text>
                     <TextInput onChangeText={(value) => setUsername(value)}
                                className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
+                </View>
+
+                <View className="grow">
 
                     <View className="grid grid-cols-2 gap-2 mb-8 p-1 w-full">
                         {[

@@ -10,7 +10,7 @@ import {Direction, SwipeArea} from "@/components/SwipeArea";
 
 export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
 type ConnectionStatus = 'initial' | 'open' | 'closed';
-type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'changed_direction', payload: Direction };
+type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'changed_direction', payload: Direction } | { type: 'powerup_stored' } | { type: 'powerup_used' };
 
 export default function CooowScreen() {
     const props = useContext(ScreenPropsContext);
@@ -20,6 +20,7 @@ export default function CooowScreen() {
     const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
     const [isPaused, setIsPaused] = useState<boolean>(true);
     const [currentDirection, setCurrentDirection] = useState<Direction | undefined>(undefined);
+    const [hasPowerup, setHasPowerup] = useState<boolean>(false);
 
     useEffect(() => {
         if (!props.connRef.current) {
@@ -38,6 +39,12 @@ export default function CooowScreen() {
             if (action.type === 'changed_direction') {
                 setCurrentDirection(action.payload);
             }
+            if (action.type === 'powerup_stored') {
+                setHasPowerup(true);
+            }
+            if (action.type === 'powerup_used') {
+                setHasPowerup(false);
+            }
         };
 
         props.connRef.current.on('close', () => setConnStatus('closed'))
@@ -54,6 +61,18 @@ export default function CooowScreen() {
             type: 'pause',
         })
     }, [])
+
+    const drop = useCallback(() => {
+        if (!props.connRef.current) {
+            return;
+        }
+
+        props.connRef.current.send({
+            type: 'drop',
+        });
+        setHasPowerup(false);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }, [props.connRef]);
 
     const move = useCallback((direction: Direction) => {
         if (!props.connRef.current) {
@@ -77,13 +96,19 @@ export default function CooowScreen() {
 
     return (
         <View className="bg-white flex-1">
-            <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-start gap-4' : 'flex-col'}`}>
-                <View className={`gap-8 p-4 ${isLandscape ? 'flex-1' : ''}`}>
-                    <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+            <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-stretch gap-4' : 'flex-col'}`}>
+                <View className={`gap-8 p-4 grow ${isLandscape ? 'flex-1' : ''}`}>
 
-                    <View>
+                    <View className="flex-row items-center gap-2 justify-between">
+                        <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
                         <Button onPress={requestPause} disabled={!props.connRef.current}>
                             {isPaused ? 'Resume' : 'Pause'}
+                        </Button>
+                    </View>
+
+                    <View className="gap-2 grow flex-1">
+                        <Button onPress={drop} disabled={!props.connRef.current || isPaused || !hasPowerup} className="grow">
+                            Drop Trap
                         </Button>
                     </View>
                 </View>
