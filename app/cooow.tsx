@@ -1,18 +1,21 @@
-import {ScrollView, View} from 'react-native';
+import {View, useWindowDimensions} from 'react-native';
 import "@/assets/css/global.css"
 
 import {Image} from 'expo-image';
 import {useCallback, useContext, useEffect, useState} from "react";
 import {Button} from "@/components/ui/Button";
 import {ScreenPropsContext} from "@/app/_layout";
+import * as Haptics from 'expo-haptics';
+import {Direction, SwipeArea} from "@/components/SwipeArea";
 
 export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
-type Direction = 'up' | 'down' | 'right' | 'left';
 type ConnectionStatus = 'initial' | 'open' | 'closed';
 type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'changed_direction', payload: Direction };
 
 export default function CooowScreen() {
     const props = useContext(ScreenPropsContext);
+    const {width, height} = useWindowDimensions();
+    const isLandscape = width > height;
 
     const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
     const [isPaused, setIsPaused] = useState<boolean>(true);
@@ -56,57 +59,38 @@ export default function CooowScreen() {
         if (!props.connRef.current) {
             return;
         }
+
+        // Prevent moving in the same or opposite direction.
+        if (direction === 'up' || direction === 'down') {
+            if (currentDirection === 'up' || currentDirection === 'down') return;
+        }
+        if (direction === 'left' || direction === 'right') {
+            if (currentDirection === 'left' || currentDirection === 'right') return;
+        }
+
         props.connRef.current.send({
             type: 'move',
             payload: direction,
         });
-    }, []);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }, [currentDirection, props.connRef]);
 
     return (
-        <ScrollView className="bg-white">
-            <View className="px-4 py-8 flex gap-8">
-                <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+        <View className="bg-white flex-1">
+            <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-start gap-4' : 'flex-col'}`}>
+                <View className={`gap-8 p-4 ${isLandscape ? 'flex-1' : ''}`}>
+                    <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
 
-                <View>
-                    <View className="mb-16">
+                    <View>
                         <Button onPress={requestPause} disabled={!props.connRef.current}>
                             {isPaused ? 'Resume' : 'Pause'}
                         </Button>
                     </View>
-
-                    <View className="flex gap-2 mb-16">
-                        <Button onPress={() => move('up')}
-                                disabled={!props.connRef.current || isPaused || currentDirection === 'up' || currentDirection === 'down'}
-                                className="h-32">
-                            Up
-                        </Button>
-                        <View className="flex gap-2 flex-row flex-nowrap justify-between">
-                            <View className="grow">
-
-                                <Button onPress={() => move('left')}
-                                        disabled={!props.connRef.current || isPaused || currentDirection === 'left' || currentDirection === 'right'}
-                                        className="h-32">
-                                    Left
-                                </Button>
-                            </View>
-                            <View className="grow">
-                                <Button onPress={() => move('right')}
-                                        disabled={!props.connRef.current || isPaused || currentDirection === 'left' || currentDirection === 'right'}
-                                        className="h-32">
-                                    Right
-                                </Button>
-                            </View>
-                        </View>
-                        <Button onPress={() => move('down')}
-                                disabled={!props.connRef.current || isPaused || currentDirection === 'up' || currentDirection === 'down'}
-                                className="h-32">
-                            Down
-                        </Button>
-                    </View>
                 </View>
 
+                <SwipeArea onSwipe={move} disabled={isPaused}/>
             </View>
 
-        </ScrollView>
+        </View>
     );
 }

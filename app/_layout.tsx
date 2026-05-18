@@ -5,6 +5,7 @@ import {StatusBar} from 'expo-status-bar';
 import {useColorScheme} from '@/hooks/use-color-scheme';
 import {createContext, useRef} from "react";
 import Peer, {DataConnection} from "peerjs";
+import {GestureHandlerRootView} from "react-native-gesture-handler";
 
 export const unstable_settings = {
     anchor: '(tabs)',
@@ -21,21 +22,23 @@ export default function RootLayout() {
     const onDataRef = useRef<(data: unknown) => void>((data) => onDataCallbackRef.current(data));
 
     return (
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <ScreenPropsContext.Provider value={{
-                peerRef,
-                connRef,
-                onDataRef,
-                onDataCallbackRef,
-            }}>
-                <Stack>
-                    <Stack.Screen name="index" options={{title: 'Lobby', headerShown: false}}/>
-                    <Stack.Screen name="cooow" options={{title: 'Cooow', headerShown: false,}}/>
-                    <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-                    <Stack.Screen name="modal" options={{presentation: 'modal', title: 'Modal'}}/>
-                </Stack>
-                <StatusBar style="auto"/>
-            </ScreenPropsContext.Provider>
-        </ThemeProvider>
+        <GestureHandlerRootView style={{flex: 1}}>
+            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <ScreenPropsContext.Provider value={{
+                    peerRef,
+                    connRef,
+                    onDataRef,
+                    onDataCallbackRef,
+                }}>
+                    <Stack>
+                        <Stack.Screen name="index" options={{title: 'Lobby', headerShown: false}}/>
+                        <Stack.Screen name="cooow" options={{title: 'Cooow', headerShown: false,}}/>
+                        <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+                        <Stack.Screen name="modal" options={{presentation: 'modal', title: 'Modal'}}/>
+                    </Stack>
+                    <StatusBar style="auto"/>
+                </ScreenPropsContext.Provider>
+            </ThemeProvider>
+        </GestureHandlerRootView>
     );
 }
