@@ -4,8 +4,10 @@ import {StatusBar} from 'expo-status-bar';
 
 import {useColorScheme} from '@/hooks/use-color-scheme';
 import {createContext, useRef} from "react";
-import Peer, {DataConnection} from "peerjs";
+import Peer, {registerWebRTCGlobals} from "@/hooks/usePeer";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
+
+registerWebRTCGlobals();
 
 export const unstable_settings = {
     anchor: '(tabs)',

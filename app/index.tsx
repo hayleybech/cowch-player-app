@@ -1,9 +1,9 @@
-import {Pressable, ScrollView, Text, TextInput, useWindowDimensions, View} from 'react-native';
+import {Pressable, Text, TextInput, useWindowDimensions, View} from 'react-native';
 import "@/assets/css/global.css"
 
 import {Image} from 'expo-image';
 import {useCallback, useContext, useEffect, useState} from "react";
-import Peer from "peerjs";
+import Peer from "@/hooks/usePeer";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
 import {ScreenPropsContext} from "@/app/_layout";
@@ -19,6 +19,8 @@ export default function LobbyScreen() {
     const [availableBreeds, setAvailableBreeds] = useState<string[]>(['holstein-friesian', 'hereford', 'angus', 'highland']);
 
     const props = useContext(ScreenPropsContext);
+    const {width, height} = useWindowDimensions();
+    const isLandscape = width > height;
 
     const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
 
@@ -106,7 +108,7 @@ export default function LobbyScreen() {
         <View className="bg-white flex-1">
             {connStatus !== 'open' && (
             <View className="flex justify-center items-center h-full">
-                <View className="flex-col w-1/2">
+                <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
                     <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
 
                     <Text className="font-bold text-lg">Lobby Code</Text>
@@ -175,8 +177,13 @@ export default function LobbyScreen() {
                 </View>
             </View>
             )}
+            <View className="absolute bottom-4 left-0 right-0 flex items-center">
+                {!isLandscape && (
+                    <Text className="text-neutral-400 text-sm italic">Best played in landscape 🔄</Text>
+                )}
 
+                <Text className="text-neutral-400 text-cs">www.hayleybech.me</Text>
+            </View>
         </View>
-    )
-        ;
+    );
 }
