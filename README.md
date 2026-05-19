@@ -37,3 +37,6 @@ eas deploy
 ```bash
 eas deploy --prod
 ```
+### Android
+1. eas build --platform android --profile development
+2. eas deploy

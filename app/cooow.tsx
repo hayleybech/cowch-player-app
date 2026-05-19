@@ -68,7 +68,19 @@ export default function CooowScreen() {
         }
 
         props.connRef.current.send({
-            type: 'drop',
+            type: 'drop_powerup',
+        });
+        setHasPowerup(false);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }, [props.connRef]);
+
+    const usePowerup = useCallback(() => {
+        if (!props.connRef.current) {
+            return;
+        }
+
+        props.connRef.current.send({
+            type: 'use_powerup',
         });
         setHasPowerup(false);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -107,6 +119,9 @@ export default function CooowScreen() {
                     </View>
 
                     <View className="gap-2 grow flex-1">
+                        <Button onPress={usePowerup} disabled={!props.connRef.current || isPaused || !hasPowerup} className="grow">
+                            Use
+                        </Button>
                         <Button onPress={drop} disabled={!props.connRef.current || isPaused || !hasPowerup} className="grow">
                             Drop Trap
                         </Button>
