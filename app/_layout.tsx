@@ -19,6 +19,9 @@ export default function RootLayout() {
 
     const peerRef = useRef<Peer>(null);
     const connRef = useRef<DataConnection>(null);
+    const hostIdRef = useRef<string>('');
+    const usernameRef = useRef<string>('');
+    const hasConnectedRef = useRef<boolean>(false);
 
     const onDataCallbackRef = useRef<(data: unknown) => void>((data) => console.error('Data callback is missing.'));
     const onDataRef = useRef<(data: unknown) => void>((data) => onDataCallbackRef.current(data));
@@ -31,6 +34,9 @@ export default function RootLayout() {
                     connRef,
                     onDataRef,
                     onDataCallbackRef,
+                    hostIdRef,
+                    usernameRef,
+                    hasConnectedRef,
                 }}>
                     <Stack>
                         <Stack.Screen name="index" options={{title: 'Lobby', headerShown: false}}/>

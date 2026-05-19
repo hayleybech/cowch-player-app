@@ -1,4 +1,4 @@
-import {View, useWindowDimensions} from 'react-native';
+import {Pressable, Text, View, useWindowDimensions} from 'react-native';
 import "@/assets/css/global.css"
 
 import {Image} from 'expo-image';
@@ -8,8 +8,10 @@ import {ScreenPropsContext} from "@/app/_layout";
 import * as Haptics from 'expo-haptics';
 import {Direction, SwipeArea} from "@/components/SwipeArea";
 
+import {useRouter} from "expo-router";
+
 export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
-type ConnectionStatus = 'initial' | 'open' | 'closed';
+type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
 type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'changed_direction', payload: Direction } | { type: 'powerup_stored' } | { type: 'powerup_used' };
 
 export default function CooowScreen() {
@@ -18,6 +20,7 @@ export default function CooowScreen() {
     const isLandscape = width > height;
 
     const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
+    const router = useRouter();
     const [isPaused, setIsPaused] = useState<boolean>(true);
     const [currentDirection, setCurrentDirection] = useState<Direction | undefined>(undefined);
     const [hasPowerup, setHasPowerup] = useState<boolean>(false);
@@ -47,7 +50,10 @@ export default function CooowScreen() {
             }
         };
 
-        props.connRef.current.on('close', () => setConnStatus('closed'))
+        props.connRef.current.on('close', () => {
+            setConnStatus('reconnecting');
+            router.navigate('/');
+        })
 
 
     }, []);
@@ -91,20 +97,12 @@ export default function CooowScreen() {
             return;
         }
 
-        // Prevent moving in the same or opposite direction.
-        if (direction === 'up' || direction === 'down') {
-            if (currentDirection === 'up' || currentDirection === 'down') return;
-        }
-        if (direction === 'left' || direction === 'right') {
-            if (currentDirection === 'left' || currentDirection === 'right') return;
-        }
-
         props.connRef.current.send({
             type: 'move',
             payload: direction,
         });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, [currentDirection, props.connRef]);
+    }, [props.connRef]);
 
     return (
         <View className="bg-white flex-1">
@@ -112,7 +110,15 @@ export default function CooowScreen() {
                 <View className={`gap-8 p-4 grow ${isLandscape ? 'flex-1' : ''}`}>
 
                     <View className="flex-row items-center gap-2 justify-between">
-                        <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+                        <View>
+                            <Pressable onPress={() => router.replace('/')}>
+                                <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+                            </Pressable>
+                            <Text className="font-bold">{props.usernameRef.current}</Text>
+                            {!isLandscape && (
+                                <Text className="text-neutral-400 text-sm italic">Best played in landscape 🔄</Text>
+                            )}
+                        </View>
                         <Button onPress={requestPause} disabled={!props.connRef.current}>
                             {isPaused ? 'Resume' : 'Pause'}
                         </Button>

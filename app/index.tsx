@@ -10,15 +10,15 @@ import {ScreenPropsContext} from "@/app/_layout";
 import classNames from "classnames";
 import {CowBreed} from "@/app/cooow";
 
-type ConnectionStatus = 'initial' | 'open' | 'closed';
+type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
 
 export default function LobbyScreen() {
-    const [hostId, setHostId] = useState<string>();
-    const [username, setUsername] = useState<string>();
+    const props = useContext(ScreenPropsContext);
+    const [hostId, setHostId] = useState<string>(props.hostIdRef?.current || '');
+    const [username, setUsername] = useState<string>(props.usernameRef?.current || '');
     const [breed, setBreed] = useState<CowBreed>('highland');
     const [availableBreeds, setAvailableBreeds] = useState<string[]>(['holstein-friesian', 'hereford', 'angus', 'highland']);
 
-    const props = useContext(ScreenPropsContext);
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
@@ -34,9 +34,9 @@ export default function LobbyScreen() {
         const peer = new Peer();
         props.peerRef.current = peer;
 
-        peer.on('disconnected', (id) => console.log('peer disconnected: ', id));
+        peer.on('disconnected', (id: string) => console.log('peer disconnected: ', id));
         peer.on('close', () => console.log('peer closed'));
-        peer.on('error', (error) => console.error('peer error', error));
+        peer.on('error', (error: string) => console.error('peer error', error));
 
         return () => {
             peer.destroy();
@@ -81,6 +81,9 @@ export default function LobbyScreen() {
             return;
         }
 
+        props.hostIdRef.current = hostId;
+        props.usernameRef.current = username;
+
         const conn = props.peerRef.current.connect(`COWCH-${hostId}`);
 
         conn.on('open', function () {
@@ -93,89 +96,121 @@ export default function LobbyScreen() {
             })
 
             setConnStatus('open');
+            props.hasConnectedRef.current = true;
         });
 
-        conn.on('close', () => {
-            setConnStatus('closed');
-            router.navigate('/');
-        })
+        conn.on('disconnected', () => setConnStatus('reconnecting'))
+        conn.on('close', () => setConnStatus('reconnecting'));
 
+    }, [hostId, props.connRef, props.hasConnectedRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef, username]);
 
-    }, [hostId, props.connRef, props.onDataRef, props.peerRef, router, username]);
+    const isReconnecting = (connStatus === 'reconnecting' || connStatus === 'initial') && props.hostIdRef?.current && hostId && username && props.hasConnectedRef?.current;
 
+    useEffect(() => {
+        let timeout: any;
+        if (isReconnecting) {
+            timeout = setTimeout(() => {
+                connect();
+            }, 3000);
+        }
+        return () => clearTimeout(timeout);
+    }, [connStatus, connect, isReconnecting]);
+
+    useEffect(() => {
+        if (hostId && username && connStatus === 'initial') {
+            connect();
+        }
+    }, [connStatus, connect, hostId, username]);
 
     return (
         <View className="bg-white flex-1">
             {connStatus !== 'open' && (
-            <View className="flex justify-center items-center h-full">
-                <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
-                    <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+                <View className="flex justify-center items-center h-full">
+                    <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
+                        <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]" />
 
-                    <Text className="font-bold text-lg">Lobby Code</Text>
-                    <TextInput onChangeText={(value) => setHostId(value)}
-                               className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
+                        <Text className="font-bold text-lg">Lobby Code</Text>
+                        <TextInput onChangeText={(value) => {
+                            setHostId(value);
+                            props.hostIdRef.current = value;
+                        }}
+                                   defaultValue={hostId}
+                                   className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
 
-                    <Text className="font-bold text-lg">Username</Text>
-                    <TextInput onChangeText={(value) => setUsername(value)}
-                               className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
+                        <Text className="font-bold text-lg">Username</Text>
+                        <TextInput onChangeText={(value) => {
+                            setUsername(value);
+                            props.usernameRef.current = value;
+                        }}
+                                   defaultValue={username}
+                                   className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
 
-                    <View className="mb-8">
-                        <Button onPress={connect} disabled={!hostId || !username}>
-                            Connect
-                        </Button>
+                        <View className="mb-8">
+                            <Button onPress={connect} disabled={!hostId || !username || isReconnecting}>
+                                {isReconnecting ? 'Reconnecting...' : 'Connect'}
+                            </Button>
+                        </View>
+                        {isReconnecting && (
+                            <Text className="text-center text-orange-500 font-bold">
+                                Connection lost. Trying to reconnect...
+                            </Text>
+                        )}
                     </View>
-                </View>
-            </View>)}
+                </View>)}
 
             {connStatus === 'open' && (
-            <View className="flex justify-center items-center h-full p-4">
-                <View className="w-full h-full shrink flex justify-center">
-                    <View className="grid grid-cols-4 gap-2 mb-8 p-1 w-full">
-                        {[
-                            {
-                                id: 'holstein_friesian',
-                                img: require('@/assets/images/holstein-friesian-side.png'),
-                                name: 'Holstein Friesian',
-                            },
-                            {
-                                id: 'hereford',
-                                img: require('@/assets/images/hereford-side.png'),
-                                name: 'Hereford',
-                            },
-                            {
-                                id: 'angus',
-                                img: require('@/assets/images/angus-side.png'),
-                                name: 'Angus',
-                            },
-                            {
-                                id: 'highland',
-                                img: require('@/assets/images/highland-side.png'),
-                                name: 'Highland',
-                            },
-                        ].map(({id, img, name}) => (
-                            <Pressable
-                                key={id}
-                                disabled={!availableBreeds.includes(id)}
-                                onPress={() => setBreed(id as CowBreed)}
-                                className={classNames(
-                                    'flex flex-col gap-2 border-2 p-2',
-                                    id === breed ? 'border-neutral-900' : 'border-transparent',
-                                    !availableBreeds.includes(id) && 'opacity-20'
-                                )}>
-                                <Image source={img}
-                                       className="aspect-[2/1] w-full shrink"/>
-                                <Text className="font-bold">{name}</Text>
-                            </Pressable>
-                        ))}
-                    </View>
+                <View className="flex justify-center items-center h-full p-4">
+                    <View className="w-full h-full shrink flex justify-center">
+                        <View className="flex-row justify-between items-center mb-4">
+                            <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]" />
+                            <Text className="text-xl font-bold">Hello, {username}!</Text>
+                        </View>
+                        <View className="grid grid-cols-4 gap-2 mb-8 p-1 w-full">
+                            {[
+                                {
+                                    id: 'holstein_friesian',
+                                    img: require('@/assets/images/holstein-friesian-side.png'),
+                                    name: 'Holstein Friesian',
+                                },
+                                {
+                                    id: 'hereford',
+                                    img: require('@/assets/images/hereford-side.png'),
+                                    name: 'Hereford',
+                                },
+                                {
+                                    id: 'angus',
+                                    img: require('@/assets/images/angus-side.png'),
+                                    name: 'Angus',
+                                },
+                                {
+                                    id: 'highland',
+                                    img: require('@/assets/images/highland-side.png'),
+                                    name: 'Highland',
+                                },
+                            ].map(({id, img, name}) => (
+                                <Pressable
+                                    key={id}
+                                    disabled={!availableBreeds.includes(id)}
+                                    onPress={() => setBreed(id as CowBreed)}
+                                    className={classNames(
+                                        'flex flex-col gap-2 border-2 p-2',
+                                        id === breed ? 'border-neutral-900' : 'border-transparent',
+                                        !availableBreeds.includes(id) && 'opacity-20'
+                                    )}>
+                                    <Image source={img}
+                                           className="aspect-[2/1] w-full shrink"/>
+                                    <Text className="font-bold">{name}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
 
-                    <View className="mb-8">
-                        <Button onPress={join}>
-                            Join
-                        </Button>
+                        <View className="mb-8">
+                            <Button onPress={join}>
+                                Join
+                            </Button>
+                        </View>
                     </View>
                 </View>
-            </View>
             )}
             <View className="absolute bottom-4 left-0 right-0 flex items-center">
                 {!isLandscape && (
