@@ -127,7 +127,16 @@ export default function LobbyScreen() {
             {connStatus !== 'open' && (
                 <View className="flex justify-center items-center h-full">
                     <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
-                        <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]" />
+                        <View className="mb-4">
+                            <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+                        </View>
+
+                        <View className="mb-4">
+                            <Text className="text-lg">
+                                <Text>Open a lobby at </Text>
+                                <Text className="font-bold">cowch.laravel.cloud</Text>
+                            </Text>
+                        </View>
 
                         <Text className="font-bold text-lg">Lobby Code</Text>
                         <TextInput onChangeText={(value) => {
@@ -162,7 +171,7 @@ export default function LobbyScreen() {
                 <View className="flex justify-center items-center h-full p-4">
                     <View className="w-full h-full shrink flex justify-center">
                         <View className="flex-row justify-between items-center mb-4">
-                            <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]" />
+                            <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
                             <Text className="text-xl font-bold">Hello, {username}!</Text>
                         </View>
                         <View className="grid grid-cols-4 gap-2 mb-8 p-1 w-full">
