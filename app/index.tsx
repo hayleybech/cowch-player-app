@@ -139,20 +139,26 @@ export default function LobbyScreen() {
                         </View>
 
                         <Text className="font-bold text-lg">Lobby Code</Text>
-                        <TextInput onChangeText={(value) => {
-                            setHostId(value);
-                            props.hostIdRef.current = value;
-                        }}
-                                   defaultValue={hostId}
-                                   className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
+                        <TextInput
+                            onChangeText={(value) => {
+                                setHostId(value);
+                                props.hostIdRef.current = value;
+                            }}
+                            defaultValue={hostId}
+                            maxLength={4}
+                            className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"
+                        />
 
                         <Text className="font-bold text-lg">Username</Text>
-                        <TextInput onChangeText={(value) => {
-                            setUsername(value);
-                            props.usernameRef.current = value;
-                        }}
-                                   defaultValue={username}
-                                   className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"/>
+                        <TextInput
+                            onChangeText={(value) => {
+                                setUsername(value);
+                                props.usernameRef.current = value;
+                            }}
+                            maxLength={15}
+                            defaultValue={username}
+                            className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"
+                        />
 
                         <View className="mb-8">
                             <Button onPress={connect} disabled={!hostId || !username || isReconnecting}>
