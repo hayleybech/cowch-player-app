@@ -140,10 +140,12 @@ export default function LobbyScreen() {
                         <Text className="font-bold text-lg">Lobby Code</Text>
                         <TextInput
                             onChangeText={(value) => {
-                                setHostId(value);
-                                props.hostIdRef.current = value;
+                                const upperValue = value.toUpperCase();
+                                setHostId(upperValue);
+                                props.hostIdRef.current = upperValue;
                             }}
-                            defaultValue={hostId}
+                            value={hostId}
+                            autoCapitalize="characters"
                             maxLength={4}
                             className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"
                         />
