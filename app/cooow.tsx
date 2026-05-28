@@ -19,7 +19,7 @@ export default function CooowScreen() {
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
-    const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
+    const [connStatus, setConnStatus] = useState<ConnectionStatus>('open');
     const router = useRouter();
     const [isPaused, setIsPaused] = useState<boolean>(true);
     const [hasStarted, setHasStarted] = useState<boolean>(false);
@@ -28,6 +28,53 @@ export default function CooowScreen() {
     const [isDead, setIsDead] = useState<boolean>(false);
     const [isGameEnded, setIsGameEnded] = useState<boolean>(false);
     const [winner, setWinner] = useState<string | undefined>(undefined);
+
+    const connect = useCallback(() => {
+        if (!props.peerRef?.current || !props.hostIdRef.current || !props.usernameRef.current) {
+            return;
+        }
+
+        const conn = props.peerRef.current.connect(`COWCH-${props.hostIdRef.current}`);
+
+        conn.on('open', function () {
+            console.log('host connection opened (reconnected)');
+
+            props.connRef.current = conn;
+            conn.on('data', props.onDataRef.current);
+
+            conn.send({
+                type: 'connect',
+                payload: {username: props.usernameRef.current},
+            })
+
+            setConnStatus('open');
+        });
+
+        conn.on('error', (error: string) => {
+            console.log('host connection error', error);
+        });
+
+        conn.on('disconnected', () => {
+            console.log('host disconnected');
+            setConnStatus('reconnecting');
+        });
+
+        conn.on('close', () => {
+            console.log('host closed');
+            setConnStatus('reconnecting');
+        });
+
+    }, [props.connRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef]);
+
+    useEffect(() => {
+        let timeout: any;
+        if (connStatus === 'reconnecting') {
+            timeout = setTimeout(() => {
+                connect();
+            }, 3000);
+        }
+        return () => clearTimeout(timeout);
+    }, [connStatus, connect]);
 
     useEffect(() => {
         if (!props.connRef.current) {
@@ -70,13 +117,20 @@ export default function CooowScreen() {
             }
         };
 
-        props.connRef.current.on('close', () => {
+        const handleClose = () => {
             setConnStatus('reconnecting');
-            router.navigate('/');
-        })
+        };
 
+        props.connRef.current.on('close', handleClose);
+        props.connRef.current.on('disconnected', handleClose);
 
-    }, []);
+        return () => {
+            if (props.connRef.current) {
+                props.connRef.current.off('close', handleClose);
+                props.connRef.current.off('disconnected', handleClose);
+            }
+        }
+    }, [props.connRef]);
 
     const requestPauseOrStart = useCallback(() => {
         if (!props.connRef.current) {
@@ -181,6 +235,13 @@ export default function CooowScreen() {
                     <Button onPress={requestPauseOrStart} className="w-full max-w-xs">
                         Play Again
                     </Button>
+                </View>
+            )}
+
+            {connStatus === 'reconnecting' && (
+                <View className="absolute inset-0 bg-orange-500/90 z-[60] justify-center items-center p-6">
+                    <Text className="text-white font-bold text-6xl mb-2 text-center">CONNECTION LOST</Text>
+                    <Text className="text-white text-center text-lg mb-8">Trying to reconnect...</Text>
                 </View>
             )}
 

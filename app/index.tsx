@@ -114,32 +114,12 @@ export default function LobbyScreen() {
         });
         conn.on('disconnected', () => {
             console.log('host disconnected');
-            setConnStatus('reconnecting');
         });
         conn.on('close', () => {
             console.log('host closed');
-            setConnStatus('reconnecting');
         });
 
     }, [hostId, props.connRef, props.hasConnectedRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef, username]);
-
-    const isReconnecting = (connStatus === 'reconnecting' || connStatus === 'initial') && props.hostIdRef?.current && hostId && username && props.hasConnectedRef?.current;
-
-    useEffect(() => {
-        let timeout: any;
-        if (isReconnecting) {
-            timeout = setTimeout(() => {
-                connect();
-            }, 3000);
-        }
-        return () => clearTimeout(timeout);
-    }, [connStatus, connect, isReconnecting]);
-
-    useEffect(() => {
-        if (hostId && username && connStatus === 'initial') {
-            connect();
-        }
-    }, [connStatus, connect, hostId, username]);
 
     return (
         <View className="bg-white flex-1">
@@ -180,15 +160,10 @@ export default function LobbyScreen() {
                         />
 
                         <View className="mb-8">
-                            <Button onPress={connect} disabled={!hostId || !username || isReconnecting}>
-                                {isReconnecting ? 'Reconnecting...' : 'Connect'}
+                            <Button onPress={connect} disabled={!hostId || !username}>
+                                Connect
                             </Button>
                         </View>
-                        {isReconnecting && (
-                            <Text className="text-center text-orange-500 font-bold">
-                                Connection lost. Trying to reconnect...
-                            </Text>
-                        )}
                     </View>
                 </View>)}
 
