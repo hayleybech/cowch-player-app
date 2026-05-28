@@ -12,7 +12,7 @@ import {useRouter} from "expo-router";
 
 export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
 type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
-type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'changed_direction', payload: Direction } | { type: 'powerup_stored' } | { type: 'powerup_used' };
+type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'changed_direction', payload: Direction } | { type: 'powerup_stored' } | { type: 'powerup_used' } | { type: 'died' };
 
 export default function CooowScreen() {
     const props = useContext(ScreenPropsContext);
@@ -24,6 +24,7 @@ export default function CooowScreen() {
     const [isPaused, setIsPaused] = useState<boolean>(true);
     const [currentDirection, setCurrentDirection] = useState<Direction | undefined>(undefined);
     const [hasPowerup, setHasPowerup] = useState<boolean>(false);
+    const [isDead, setIsDead] = useState<boolean>(false);
 
     useEffect(() => {
         if (!props.connRef.current) {
@@ -47,6 +48,9 @@ export default function CooowScreen() {
             }
             if (action.type === 'powerup_used') {
                 setHasPowerup(false);
+            }
+            if (action.type === 'died') {
+                setIsDead(true);
             }
         };
 
@@ -119,22 +123,28 @@ export default function CooowScreen() {
                                 <Text className="text-neutral-400 text-sm italic">Best played in landscape 🔄</Text>
                             )}
                         </View>
-                        <Button onPress={requestPause} disabled={!props.connRef.current}>
+                        <Button onPress={requestPause} disabled={!props.connRef.current || isDead}>
                             {isPaused ? 'Resume' : 'Pause'}
                         </Button>
                     </View>
 
+                    {isDead && (
+                        <View className="bg-red-500 p-2 rounded-lg items-center">
+                            <Text className="text-white font-bold text-lg">YOU DIED</Text>
+                        </View>
+                    )}
+
                     <View className="gap-2 grow flex-1">
-                        <Button onPress={usePowerup} disabled={!props.connRef.current || isPaused || !hasPowerup} className="grow">
+                        <Button onPress={usePowerup} disabled={!props.connRef.current || isPaused || !hasPowerup || isDead} className="grow">
                             Use
                         </Button>
-                        <Button onPress={drop} disabled={!props.connRef.current || isPaused || !hasPowerup} className="grow">
+                        <Button onPress={drop} disabled={!props.connRef.current || isPaused || !hasPowerup || isDead} className="grow">
                             Drop Trap
                         </Button>
                     </View>
                 </View>
 
-                <SwipeArea onSwipe={move} disabled={isPaused}/>
+                <SwipeArea onSwipe={move} disabled={isPaused || isDead} isDead={isDead}/>
             </View>
 
         </View>

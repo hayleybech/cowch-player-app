@@ -9,9 +9,10 @@ export type Direction = 'up' | 'down' | 'right' | 'left';
 interface SwipeAreaProps {
     onSwipe: (direction: Direction) => void;
     disabled?: boolean;
+    isDead?: boolean;
 }
 
-export const SwipeArea: React.FC<SwipeAreaProps> = ({onSwipe, disabled}) => {
+export const SwipeArea: React.FC<SwipeAreaProps> = ({onSwipe, disabled, isDead}) => {
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
@@ -44,15 +45,22 @@ export const SwipeArea: React.FC<SwipeAreaProps> = ({onSwipe, disabled}) => {
                     isLandscape ? 'h-full w-1/2' : 'w-full h-1/2',
                 )}>
                 <View
-                    className="h-full w-full border-2 border-dashed border-neutral-300 rounded-3xl flex items-center justify-center bg-neutral-50 relative">
-                    <MaterialCommunityIcons name="chevron-up" size={32} color="#d4d4d4" className="absolute top-4"/>
-                    <MaterialCommunityIcons name="chevron-down" size={32} color="#d4d4d4"
-                                            className="absolute bottom-4"/>
-                    <MaterialCommunityIcons name="chevron-left" size={32} color="#d4d4d4"
-                                            className="absolute left-4"/>
-                    <MaterialCommunityIcons name="chevron-right" size={32} color="#d4d4d4"
-                                            className="absolute right-4"/>
-                    <Text className="text-neutral-400 font-bold text-lg">Swipe to Move</Text>
+                    className={classNames("h-full w-full border-2 border-dashed border-neutral-300 rounded-3xl flex items-center justify-center bg-neutral-50 relative",
+                        isDead && "bg-red-50 border-red-200")}>
+                    {!isDead ? (
+                        <>
+                            <MaterialCommunityIcons name="chevron-up" size={32} color="#d4d4d4" className="absolute top-4"/>
+                            <MaterialCommunityIcons name="chevron-down" size={32} color="#d4d4d4"
+                                                    className="absolute bottom-4"/>
+                            <MaterialCommunityIcons name="chevron-left" size={32} color="#d4d4d4"
+                                                    className="absolute left-4"/>
+                            <MaterialCommunityIcons name="chevron-right" size={32} color="#d4d4d4"
+                                                    className="absolute right-4"/>
+                            <Text className="text-neutral-400 font-bold text-lg">Swipe to Move</Text>
+                        </>
+                    ) : (
+                        <Text className="text-red-400 font-bold text-lg text-center px-4">You are dead!{"\n"}Wait for the next round.</Text>
+                    )}
                 </View>
             </View>
         </GestureDetector>
