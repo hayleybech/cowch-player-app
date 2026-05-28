@@ -4,8 +4,9 @@ import {StatusBar} from 'expo-status-bar';
 
 import {useColorScheme} from '@/hooks/use-color-scheme';
 import {createContext, useRef} from "react";
-import Peer, {registerWebRTCGlobals} from "@/hooks/usePeer";
+import Peer, {registerWebRTCGlobals} from "@/utils/peer-util";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
+import {DataConnection} from "peerjs";
 
 registerWebRTCGlobals();
 
@@ -17,7 +18,8 @@ export const ScreenPropsContext = createContext<Record<any, any>>({});
 export default function RootLayout() {
     const colorScheme = useColorScheme();
 
-    const peerRef = useRef<Peer>(null);
+    const peerRef = useRef<typeof Peer>(null);
+    const heartbeatRef = useRef(null);
     const connRef = useRef<DataConnection>(null);
     const hostIdRef = useRef<string>('');
     const usernameRef = useRef<string>('');
@@ -31,6 +33,7 @@ export default function RootLayout() {
             <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                 <ScreenPropsContext.Provider value={{
                     peerRef,
+                    heartbeatRef,
                     connRef,
                     onDataRef,
                     onDataCallbackRef,

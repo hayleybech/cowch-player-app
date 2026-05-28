@@ -3,7 +3,7 @@ import "@/assets/css/global.css"
 
 import {Image} from 'expo-image';
 import {useCallback, useContext, useEffect, useState} from "react";
-import Peer from "@/hooks/usePeer";
+import Peer, {makePeerHeartbeater} from "@/utils/peer-util";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
 import {ScreenPropsContext} from "@/app/_layout";
@@ -34,15 +34,21 @@ export default function LobbyScreen() {
         const peer = new Peer();
         props.peerRef.current = peer;
 
-        peer.on('open', (id: string) => console.log('broker ready'));
+        peer.on('open', (id: string) => {
+            console.log('broker ready');
+            
+            props.heartbeatRef.current = makePeerHeartbeater(peer);
+        });
         peer.on('disconnected', (id: string) => console.log('broker disconnected: ', id));
         peer.on('closed', () => console.log('broker closed'));
         peer.on('error', (error: string) => console.error('broker error', error));
 
         return () => {
             peer.destroy();
+
+            props.heartbeatRef.current.stop();
         };
-    }, [props.peerRef]);
+    }, [props.heartbeatRef, props.peerRef]);
 
     useEffect(() => {
         props.onDataCallbackRef.current = (data: any) => {
