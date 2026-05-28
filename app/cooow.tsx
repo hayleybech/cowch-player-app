@@ -132,7 +132,7 @@ export default function CooowScreen() {
     }, [props.connRef]);
 
     return (
-        <View className="bg-white flex-1">
+        <View className="bg-white flex-1 relative">
             <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-stretch gap-4' : 'flex-col'}`}>
                 <View className={`gap-8 p-4 grow ${isLandscape ? 'flex-1' : ''}`}>
 
@@ -151,22 +151,6 @@ export default function CooowScreen() {
                         </Button>
                     </View>
 
-                    {isDead && (
-                        <View className="bg-red-500 p-2 rounded-lg items-center">
-                            <Text className="text-white font-bold text-lg">YOU DIED</Text>
-                        </View>
-                    )}
-
-                    {isGameEnded && (
-                        <View className="bg-blue-500 p-4 rounded-lg items-center shadow-lg">
-                            <Text className="text-white font-bold text-2xl mb-2">GAME OVER</Text>
-                            <Text className="text-white text-center font-bold text-xl mb-1">
-                                {winner === props.usernameRef.current ? 'YOU WON 🏆' : `WINNER: ${winner}`}
-                            </Text>
-                            <Text className="text-white text-center">The game has ended. Ready for another round?</Text>
-                        </View>
-                    )}
-
                     <View className="gap-2 grow flex-1">
                         <Button onPress={usePowerup} disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded} className="grow">
                             Use
@@ -179,6 +163,26 @@ export default function CooowScreen() {
 
                 <SwipeArea onSwipe={move} disabled={isPaused || isDead || isGameEnded} isDead={isDead || isGameEnded}/>
             </View>
+
+            {isDead && !isGameEnded && (
+                <View className="absolute inset-0 bg-red-500/80 z-50 justify-center items-center p-4">
+                    <Text className="text-white font-bold text-6xl mb-4 text-center">YOU DIED</Text>
+                    <Text className="text-white text-xl text-center">Wait for the next round...</Text>
+                </View>
+            )}
+
+            {isGameEnded && (
+                <View className="absolute inset-0 bg-blue-600/90 z-50 justify-center items-center p-6">
+                    <Text className="text-white font-bold text-6xl mb-2 text-center">GAME OVER</Text>
+                    <Text className="text-white text-center font-bold text-3xl mb-4">
+                        {winner === props.usernameRef.current ? 'YOU WON 🏆' : `WINNER: ${winner}`}
+                    </Text>
+                    <Text className="text-white text-center text-lg mb-8">The game has ended. Ready for another round?</Text>
+                    <Button onPress={requestPauseOrStart} className="w-full max-w-xs">
+                        Play Again
+                    </Button>
+                </View>
+            )}
 
         </View>
     );
