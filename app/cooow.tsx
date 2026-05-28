@@ -2,7 +2,7 @@ import {Pressable, Text, View, useWindowDimensions} from 'react-native';
 import "@/assets/css/global.css"
 
 import {Image} from 'expo-image';
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useContext, useEffect, useReducer, useState} from "react";
 import {Button} from "@/components/ui/Button";
 import {ScreenPropsContext} from "@/app/_layout";
 import * as Haptics from 'expo-haptics';
@@ -20,6 +20,70 @@ type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'star
     payload: { winner: string }
 };
 
+interface GameState {
+    isPaused: boolean;
+    hasStarted: boolean;
+    currentDirection: Direction | undefined;
+    hasPowerup: boolean;
+    isDead: boolean;
+    isGameEnded: boolean;
+    winner: string | undefined;
+}
+
+const initialGameState: GameState = {
+    isPaused: true,
+    hasStarted: false,
+    currentDirection: undefined,
+    hasPowerup: false,
+    isDead: false,
+    isGameEnded: false,
+    winner: undefined,
+};
+
+type GameAction =
+    | { type: 'PAUSE' }
+    | { type: 'RESUME' }
+    | { type: 'START_GAME' }
+    | { type: 'CHANGE_DIRECTION', payload: Direction }
+    | { type: 'POWERUP_STORED' }
+    | { type: 'POWERUP_USED' }
+    | { type: 'DIED' }
+    | { type: 'GAME_OVER', payload: { winner: string } };
+
+function gameReducer(state: GameState, action: GameAction): GameState {
+    switch (action.type) {
+        case 'PAUSE':
+            return { ...state, isPaused: true };
+        case 'RESUME':
+            return { ...state, isPaused: false };
+        case 'START_GAME':
+            return {
+                ...state,
+                hasStarted: true,
+                isPaused: false,
+                isGameEnded: false,
+                isDead: false,
+                winner: undefined,
+            };
+        case 'CHANGE_DIRECTION':
+            return { ...state, currentDirection: action.payload };
+        case 'POWERUP_STORED':
+            return { ...state, hasPowerup: true };
+        case 'POWERUP_USED':
+            return { ...state, hasPowerup: false };
+        case 'DIED':
+            return { ...state, isDead: true };
+        case 'GAME_OVER':
+            return {
+                ...state,
+                isGameEnded: true,
+                winner: action.payload.winner,
+            };
+        default:
+            return state;
+    }
+}
+
 export default function CooowScreen() {
     const props = useContext(ScreenPropsContext);
     const {width, height} = useWindowDimensions();
@@ -27,13 +91,8 @@ export default function CooowScreen() {
 
     const [connStatus, setConnStatus] = useState<ConnectionStatus>('open');
     const router = useRouter();
-    const [isPaused, setIsPaused] = useState<boolean>(true);
-    const [hasStarted, setHasStarted] = useState<boolean>(false);
-    const [currentDirection, setCurrentDirection] = useState<Direction | undefined>(undefined);
-    const [hasPowerup, setHasPowerup] = useState<boolean>(false);
-    const [isDead, setIsDead] = useState<boolean>(false);
-    const [isGameEnded, setIsGameEnded] = useState<boolean>(false);
-    const [winner, setWinner] = useState<string | undefined>(undefined);
+    const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
+    const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
 
     const connect = useCallback(() => {
         if (!props.peerRef?.current || !props.hostIdRef.current || !props.usernameRef.current) {
@@ -93,33 +152,28 @@ export default function CooowScreen() {
             console.log('action', action);
 
             if (action.type === 'paused') {
-                setIsPaused(true);
+                dispatch({ type: 'PAUSE' });
             }
             if (action.type === 'resumed') {
-                setIsPaused(false);
+                dispatch({ type: 'RESUME' });
             }
             if (action.type === 'started') {
-                setHasStarted(true);
-                setIsPaused(false);
-                setIsGameEnded(false);
-                setIsDead(false);
-                setWinner(undefined);
+                dispatch({ type: 'START_GAME' });
             }
             if (action.type === 'changed_direction') {
-                setCurrentDirection(action.payload);
+                dispatch({ type: 'CHANGE_DIRECTION', payload: action.payload });
             }
             if (action.type === 'powerup_stored') {
-                setHasPowerup(true);
+                dispatch({ type: 'POWERUP_STORED' });
             }
             if (action.type === 'powerup_used') {
-                setHasPowerup(false);
+                dispatch({ type: 'POWERUP_USED' });
             }
             if (action.type === 'died') {
-                setIsDead(true);
+                dispatch({ type: 'DIED' });
             }
             if (action.type === 'game_over') {
-                setIsGameEnded(true);
-                setWinner(action.payload.winner);
+                dispatch({ type: 'GAME_OVER', payload: action.payload });
             }
         };
 
@@ -136,7 +190,7 @@ export default function CooowScreen() {
                 props.connRef.current.off('disconnected', handleClose);
             }
         }
-    }, [props.connRef]);
+    }, [props.connRef, props.onDataCallbackRef]);
 
     const requestPauseOrStart = useCallback(() => {
         if (!props.connRef.current) {
@@ -163,7 +217,7 @@ export default function CooowScreen() {
         props.connRef.current.send({
             type: 'drop_powerup',
         });
-        setHasPowerup(false);
+        dispatch({ type: 'POWERUP_USED' });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }, [props.connRef]);
 
@@ -175,7 +229,7 @@ export default function CooowScreen() {
         props.connRef.current.send({
             type: 'use_powerup',
         });
-        setHasPowerup(false);
+        dispatch({ type: 'POWERUP_USED' });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }, [props.connRef]);
 
