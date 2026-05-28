@@ -246,7 +246,7 @@ export default function CooowScreen() {
     }, [props.connRef]);
 
     return (
-        <View className="bg-white flex-1 relative">
+        <View className="bg-neutral-800 flex-1 relative">
             <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-stretch gap-4' : 'flex-col'}`}>
                 <View className={`gap-8 p-4 grow ${isLandscape ? 'flex-1' : ''}`}>
 
@@ -256,7 +256,7 @@ export default function CooowScreen() {
                                 <Image source={require('@/assets/images/cowch-logo.png')}
                                        className="h-[49px] w-[200px]"/>
                             </Pressable>
-                            <Text className="font-bold">{props.usernameRef.current}</Text>
+                            <Text className="font-bold text-white">{props.usernameRef.current}</Text>
                         </View>
                         <Button onPress={requestPauseOrStart}
                                 disabled={!props.connRef.current || (isDead && !isGameEnded)}>

@@ -45,7 +45,7 @@ export const SwipeArea: React.FC<SwipeAreaProps> = ({onSwipe, disabled, isDead})
                     isLandscape ? 'h-full w-1/2' : 'w-full h-1/2',
                 )}>
                 <View
-                    className={classNames("h-full w-full border-2 border-dashed border-neutral-300 rounded-3xl flex items-center justify-center bg-neutral-50 relative",
+                    className={classNames("h-full w-full border-2 border-dashed border-neutral-400 rounded-3xl flex items-center justify-center bg-neutral-600 relative",
                         isDead && "bg-red-50 border-red-200")}>
                     {!isDead ? (
                         <>

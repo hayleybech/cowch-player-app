@@ -122,7 +122,7 @@ export default function LobbyScreen() {
     }, [hostId, props.connRef, props.hasConnectedRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef, username]);
 
     return (
-        <View className="bg-white flex-1">
+        <View className="bg-neutral-800 flex-1">
             {connStatus !== 'open' && (
                 <View className="flex justify-center items-center h-full">
                     <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
@@ -131,13 +131,13 @@ export default function LobbyScreen() {
                         </View>
 
                         <View className="mb-4">
-                            <Text className="text-lg">
+                            <Text className="text-lg text-white">
                                 <Text>Open a lobby at </Text>
                                 <Text className="font-bold">cowch.laravel.cloud</Text>
                             </Text>
                         </View>
 
-                        <Text className="font-bold text-lg">Lobby Code</Text>
+                        <Text className="font-bold text-lg text-white">Lobby Code</Text>
                         <TextInput
                             onChangeText={(value) => {
                                 const upperValue = value.toUpperCase();
@@ -147,10 +147,10 @@ export default function LobbyScreen() {
                             value={hostId}
                             autoCapitalize="characters"
                             maxLength={4}
-                            className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"
+                            className="mb-4 text-lg text-white border border-neutral-400 rounded py-0.5 px-2 focus:border-neutral-800 focus:rounded"
                         />
 
-                        <Text className="font-bold text-lg">Username</Text>
+                        <Text className="font-bold text-lg text-white">Username</Text>
                         <TextInput
                             onChangeText={(value) => {
                                 setUsername(value);
@@ -158,7 +158,7 @@ export default function LobbyScreen() {
                             }}
                             maxLength={15}
                             defaultValue={username}
-                            className="mb-4 text-lg border border-neutral-400 rounded focus:border-neutral-800 focus:rounded"
+                            className="mb-4 text-lg border border-neutral-400 text-white py-0.5 px-2 rounded focus:border-neutral-800 focus:rounded"
                         />
 
                         <View className="mb-8">
@@ -181,7 +181,7 @@ export default function LobbyScreen() {
                     <View className="w-full h-full shrink flex justify-center">
                         <View className="flex-row justify-between items-center mb-4">
                             <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
-                            <Text className="text-xl font-bold">Hello, {username}!</Text>
+                            <Text className="text-xl font-bold text-white">Hello, {username}!</Text>
                         </View>
                         <View className="grid grid-cols-4 gap-2 mb-8 p-1 w-full">
                             {[
@@ -217,7 +217,7 @@ export default function LobbyScreen() {
                                     )}>
                                     <Image source={img}
                                            className="aspect-[2/1] w-full shrink"/>
-                                    <Text className="font-bold">{name}</Text>
+                                    <Text className="font-bold text-white">{name}</Text>
                                 </Pressable>
                             ))}
                         </View>
@@ -237,7 +237,7 @@ export default function LobbyScreen() {
                 </View>
             )}
             <View className="absolute bottom-4 left-0 right-0 flex items-center">
-                <Text className="text-neutral-400 text-cs">www.hayleybech.me</Text>
+                <Text className="text-neutral-200 text-cs">www.hayleybech.me</Text>
             </View>
         </View>
     );
