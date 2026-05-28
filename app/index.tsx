@@ -34,9 +34,10 @@ export default function LobbyScreen() {
         const peer = new Peer();
         props.peerRef.current = peer;
 
-        peer.on('disconnected', (id: string) => console.log('peer disconnected: ', id));
-        peer.on('close', () => console.log('peer closed'));
-        peer.on('error', (error: string) => console.error('peer error', error));
+        peer.on('open', (id: string) => console.log('broker ready'));
+        peer.on('disconnected', (id: string) => console.log('broker disconnected: ', id));
+        peer.on('closed', () => console.log('broker closed'));
+        peer.on('error', (error: string) => console.error('broker error', error));
 
         return () => {
             peer.destroy();
@@ -87,6 +88,8 @@ export default function LobbyScreen() {
         const conn = props.peerRef.current.connect(`COWCH-${hostId}`);
 
         conn.on('open', function () {
+            console.log('host connection opened');
+
             props.connRef.current = conn;
             conn.on('data', props.onDataRef.current);
 
@@ -99,8 +102,18 @@ export default function LobbyScreen() {
             props.hasConnectedRef.current = true;
         });
 
-        conn.on('disconnected', () => setConnStatus('reconnecting'))
-        conn.on('close', () => setConnStatus('reconnecting'));
+
+        conn.on('error', (error: string) => {
+            console.log('host connection error', error);
+        });
+        conn.on('disconnected', () => {
+            console.log('host disconnected');
+            setConnStatus('reconnecting');
+        });
+        conn.on('close', () => {
+            console.log('host closed');
+            setConnStatus('reconnecting');
+        });
 
     }, [hostId, props.connRef, props.hasConnectedRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef, username]);
 
