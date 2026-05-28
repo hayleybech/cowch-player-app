@@ -165,7 +165,14 @@ export default function LobbyScreen() {
                             <Button onPress={connect} disabled={!hostId || !username}>
                                 Connect
                             </Button>
+
                         </View>
+                        {!isLandscape && (
+                            <View className="flex items-center">
+                                <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
+                            </View>
+                        )}
+
                     </View>
                 </View>)}
 
@@ -220,14 +227,16 @@ export default function LobbyScreen() {
                                 Join
                             </Button>
                         </View>
+
+                        {!isLandscape && (
+                            <View className="flex items-center">
+                                <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
+                            </View>
+                        )}
                     </View>
                 </View>
             )}
             <View className="absolute bottom-4 left-0 right-0 flex items-center">
-                {!isLandscape && (
-                    <Text className="text-neutral-400 text-sm italic">Best played in landscape 🔄</Text>
-                )}
-
                 <Text className="text-neutral-400 text-cs">www.hayleybech.me</Text>
             </View>
         </View>

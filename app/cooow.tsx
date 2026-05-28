@@ -196,14 +196,17 @@ export default function CooowScreen() {
                                 <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
                             </Pressable>
                             <Text className="font-bold">{props.usernameRef.current}</Text>
-                            {!isLandscape && (
-                                <Text className="text-neutral-400 text-sm italic">Best played in landscape 🔄</Text>
-                            )}
                         </View>
                         <Button onPress={requestPauseOrStart} disabled={!props.connRef.current || (isDead && !isGameEnded)}>
                             {isGameEnded ? 'Play Again' : (!hasStarted ? 'Start Game' : (isPaused ? 'Resume' : 'Pause'))}
                         </Button>
                     </View>
+
+                    {!isLandscape && (
+                    <View className="flex items-center">
+                        <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
+                    </View>
+                    )}
 
                     <View className="gap-2 grow flex-1">
                         <Button onPress={usePowerup} disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded} className="grow">
