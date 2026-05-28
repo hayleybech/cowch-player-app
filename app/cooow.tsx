@@ -12,7 +12,13 @@ import {useRouter} from "expo-router";
 
 export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
 type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
-type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'started' } | { type: 'changed_direction', payload: Direction } | { type: 'powerup_stored' } | { type: 'powerup_used' } | { type: 'died' } | { type: 'game_over', payload: { winner: string } };
+type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'started' } | {
+    type: 'changed_direction',
+    payload: Direction
+} | { type: 'powerup_stored' } | { type: 'powerup_used' } | { type: 'died' } | {
+    type: 'game_over',
+    payload: { winner: string }
+};
 
 export default function CooowScreen() {
     const props = useContext(ScreenPropsContext);
@@ -193,26 +199,32 @@ export default function CooowScreen() {
                     <View className="flex-row items-center gap-2 justify-between">
                         <View>
                             <Pressable onPress={() => router.replace('/')}>
-                                <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+                                <Image source={require('@/assets/images/cowch-logo.png')}
+                                       className="h-[49px] w-[200px]"/>
                             </Pressable>
                             <Text className="font-bold">{props.usernameRef.current}</Text>
                         </View>
-                        <Button onPress={requestPauseOrStart} disabled={!props.connRef.current || (isDead && !isGameEnded)}>
+                        <Button onPress={requestPauseOrStart}
+                                disabled={!props.connRef.current || (isDead && !isGameEnded)}>
                             {isGameEnded ? 'Play Again' : (!hasStarted ? 'Start Game' : (isPaused ? 'Resume' : 'Pause'))}
                         </Button>
                     </View>
 
                     {!isLandscape && (
-                    <View className="flex items-center">
-                        <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
-                    </View>
+                        <View className="flex items-center">
+                            <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
+                        </View>
                     )}
 
                     <View className="gap-2 grow flex-1">
-                        <Button onPress={usePowerup} disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded} className="grow">
+                        <Button onPress={usePowerup}
+                                disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded}
+                                className="grow">
                             Use
                         </Button>
-                        <Button onPress={drop} disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded} className="grow">
+                        <Button onPress={drop}
+                                disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded}
+                                className="grow">
                             Drop Trap
                         </Button>
                     </View>
@@ -221,33 +233,39 @@ export default function CooowScreen() {
                 <SwipeArea onSwipe={move} disabled={isPaused || isDead || isGameEnded} isDead={isDead || isGameEnded}/>
             </View>
 
-            {isDead && !isGameEnded && (
-                <View className="absolute inset-0 bg-red-500/80 z-50 justify-center items-center p-4">
-                    <Text className="text-white font-bold text-6xl mb-4 text-center">YOU DIED</Text>
-                    <Text className="text-white text-xl text-center">Wait for the next round...</Text>
-                </View>
-            )}
+            {isDead && !isGameEnded && <YouDiedOverlay/>}
 
-            {isGameEnded && (
-                <View className="absolute inset-0 bg-blue-600/90 z-50 justify-center items-center p-6">
-                    <Text className="text-white font-bold text-6xl mb-2 text-center">GAME OVER</Text>
-                    <Text className="text-white text-center font-bold text-3xl mb-4">
-                        {winner === props.usernameRef.current ? 'YOU WON 🏆' : `WINNER: ${winner}`}
-                    </Text>
-                    <Text className="text-white text-center text-lg mb-8">The game has ended. Ready for another round?</Text>
-                    <Button onPress={requestPauseOrStart} className="w-full max-w-xs">
-                        Play Again
-                    </Button>
-                </View>
-            )}
+            {isGameEnded && <GameEndedOverlay winner={winner} props={props} onPress={requestPauseOrStart}/>}
 
-            {connStatus === 'reconnecting' && (
-                <View className="absolute inset-0 bg-orange-500/90 z-[60] justify-center items-center p-6">
-                    <Text className="text-white font-bold text-6xl mb-2 text-center">CONNECTION LOST</Text>
-                    <Text className="text-white text-center text-lg mb-8">Trying to reconnect...</Text>
-                </View>
-            )}
+            {connStatus === 'reconnecting' && <ReconnectingOverlay/>}
 
         </View>
     );
+}
+
+function ReconnectingOverlay() {
+    return <View className="absolute inset-0 bg-orange-500/90 z-[60] justify-center items-center p-6">
+        <Text className="text-white font-bold text-6xl mb-2 text-center">CONNECTION LOST</Text>
+        <Text className="text-white text-center text-lg mb-8">Trying to reconnect...</Text>
+    </View>;
+}
+
+function GameEndedOverlay(props: { winner: string | undefined, props: Record<any, any>, onPress: () => void }) {
+    return <View className="absolute inset-0 bg-blue-600/90 z-50 justify-center items-center p-6">
+        <Text className="text-white font-bold text-6xl mb-2 text-center">GAME OVER</Text>
+        <Text className="text-white text-center font-bold text-3xl mb-4">
+            {props.winner === props.props.usernameRef.current ? "YOU WON 🏆" : `WINNER: ${props.winner}`}
+        </Text>
+        <Text className="text-white text-center text-lg mb-8">The game has ended. Ready for another round?</Text>
+        <Button onPress={props.onPress} className="w-full max-w-xs">
+            Play Again
+        </Button>
+    </View>;
+}
+
+function YouDiedOverlay() {
+    return <View className="absolute inset-0 bg-red-500/80 z-50 justify-center items-center p-4">
+        <Text className="text-white font-bold text-6xl mb-4 text-center">YOU DIED</Text>
+        <Text className="text-white text-xl text-center">Wait for the next round...</Text>
+    </View>;
 }
