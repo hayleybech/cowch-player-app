@@ -162,23 +162,24 @@ export default function LobbyScreen() {
                                 className="mb-4 text-lg border border-neutral-400 text-white py-0.5 px-2 rounded focus:border-neutral-800 focus:rounded"
                             />
 
-                            <View className="mb-8">
+                            <View className="mb-3">
                                 <Button onPress={connect} disabled={!hostId || !username}>
                                     Connect
                                 </Button>
 
                             </View>
-                            {!isLandscape && (
-                                <View className="flex items-center">
-                                    <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
-                                </View>
-                            )}
+                            {/*{!isLandscape && (*/}
+                            {/*    <View className="flex items-center">*/}
+                            {/*        <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>*/}
+                            {/*    </View>*/}
+                            {/*)}*/}
 
                         </View>
-                    </View>
 
-                    <View className="absolute bottom-4 left-0 right-0 flex items-center">
-                        <Text className="text-neutral-200 text-cs">www.hayleybech.me</Text>
+                        <View className="left-0 right-0 flex items-center">
+                            <Text className="text-neutral-200 text-cs">www.hayleybech.me</Text>
+                        </View>
+
                     </View>
                 </View>
             )}
@@ -186,11 +187,11 @@ export default function LobbyScreen() {
             {connStatus === 'open' && (
                 <View className="flex justify-center items-center h-full pt-3 px-4">
                     <View className="w-full h-full shrink flex justify-center">
-                        <View className="flex-row justify-between items-center mb-2">
+                        <View className="flex-row justify-between items-center mb-1">
                             <Image source={require('@/assets/images/cowch-logo.png')} className="h-[25px] w-[100px]"/>
                             <Text className="text-xl font-bold text-white">Hello, {username}!</Text>
                         </View>
-                        <View className="grid grid-cols-4 gap-2 mb-2 p-1 w-full">
+                        <View className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-1 p-1 w-full">
                             {[
                                 {
                                     id: 'holstein_friesian',
@@ -255,11 +256,11 @@ export default function LobbyScreen() {
                             </Button>
                         </View>
 
-                        {!isLandscape && (
-                            <View className="flex items-center">
-                                <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
-                            </View>
-                        )}
+                        {/*{!isLandscape && (*/}
+                        {/*    <View className="flex items-center">*/}
+                        {/*        <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>*/}
+                        {/*    </View>*/}
+                        {/*)}*/}
                     </View>
                 </View>
             )}
