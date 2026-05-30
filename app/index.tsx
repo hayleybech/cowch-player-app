@@ -36,7 +36,7 @@ export default function LobbyScreen() {
 
         peer.on('open', (id: string) => {
             console.log('broker ready');
-            
+
             props.heartbeatRef.current = makePeerHeartbeater(peer);
         });
         peer.on('disconnected', (id: string) => console.log('broker disconnected: ', id));
@@ -124,66 +124,73 @@ export default function LobbyScreen() {
     return (
         <View className="bg-neutral-800 flex-1">
             {connStatus !== 'open' && (
-                <View className="flex justify-center items-center h-full">
-                    <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
-                        <View className="mb-4">
-                            <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
-                        </View>
-
-                        <View className="mb-4">
-                            <Text className="text-lg text-white">
-                                <Text>Open a lobby at </Text>
-                                <Text className="font-bold">cowch.laravel.cloud</Text>
-                            </Text>
-                        </View>
-
-                        <Text className="font-bold text-lg text-white">Lobby Code</Text>
-                        <TextInput
-                            onChangeText={(value) => {
-                                const upperValue = value.toUpperCase();
-                                setHostId(upperValue);
-                                props.hostIdRef.current = upperValue;
-                            }}
-                            value={hostId}
-                            autoCapitalize="characters"
-                            maxLength={4}
-                            className="mb-4 text-lg text-white border border-neutral-400 rounded py-0.5 px-2 focus:border-neutral-800 focus:rounded"
-                        />
-
-                        <Text className="font-bold text-lg text-white">Username</Text>
-                        <TextInput
-                            onChangeText={(value) => {
-                                setUsername(value);
-                                props.usernameRef.current = value;
-                            }}
-                            maxLength={15}
-                            defaultValue={username}
-                            className="mb-4 text-lg border border-neutral-400 text-white py-0.5 px-2 rounded focus:border-neutral-800 focus:rounded"
-                        />
-
-                        <View className="mb-8">
-                            <Button onPress={connect} disabled={!hostId || !username}>
-                                Connect
-                            </Button>
-
-                        </View>
-                        {!isLandscape && (
-                            <View className="flex items-center">
-                                <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
+                <View className="flex">
+                    <View className="flex justify-center items-center h-full">
+                        <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
+                            <View className="mb-4">
+                                <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
                             </View>
-                        )}
 
+                            <View className="mb-4">
+                                <Text className="text-lg text-white">
+                                    <Text>Open a lobby at </Text>
+                                    <Text className="font-bold">cowch.laravel.cloud</Text>
+                                </Text>
+                            </View>
+
+                            <Text className="font-bold text-lg text-white">Lobby Code</Text>
+                            <TextInput
+                                onChangeText={(value) => {
+                                    const upperValue = value.toUpperCase();
+                                    setHostId(upperValue);
+                                    props.hostIdRef.current = upperValue;
+                                }}
+                                value={hostId}
+                                autoCapitalize="characters"
+                                maxLength={4}
+                                className="mb-4 text-lg text-white border border-neutral-400 rounded py-0.5 px-2 focus:border-neutral-800 focus:rounded"
+                            />
+
+                            <Text className="font-bold text-lg text-white">Username</Text>
+                            <TextInput
+                                onChangeText={(value) => {
+                                    setUsername(value);
+                                    props.usernameRef.current = value;
+                                }}
+                                maxLength={15}
+                                defaultValue={username}
+                                className="mb-4 text-lg border border-neutral-400 text-white py-0.5 px-2 rounded focus:border-neutral-800 focus:rounded"
+                            />
+
+                            <View className="mb-8">
+                                <Button onPress={connect} disabled={!hostId || !username}>
+                                    Connect
+                                </Button>
+
+                            </View>
+                            {!isLandscape && (
+                                <View className="flex items-center">
+                                    <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
+                                </View>
+                            )}
+
+                        </View>
                     </View>
-                </View>)}
+
+                    <View className="absolute bottom-4 left-0 right-0 flex items-center">
+                        <Text className="text-neutral-200 text-cs">www.hayleybech.me</Text>
+                    </View>
+                </View>
+            )}
 
             {connStatus === 'open' && (
-                <View className="flex justify-center items-center h-full p-4">
+                <View className="flex justify-center items-center h-full pt-3 px-4">
                     <View className="w-full h-full shrink flex justify-center">
-                        <View className="flex-row justify-between items-center mb-4">
-                            <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+                        <View className="flex-row justify-between items-center mb-2">
+                            <Image source={require('@/assets/images/cowch-logo.png')} className="h-[25px] w-[100px]"/>
                             <Text className="text-xl font-bold text-white">Hello, {username}!</Text>
                         </View>
-                        <View className="grid grid-cols-4 gap-2 mb-8 p-1 w-full">
+                        <View className="grid grid-cols-4 gap-2 mb-2 p-1 w-full">
                             {[
                                 {
                                     id: 'holstein_friesian',
@@ -205,14 +212,34 @@ export default function LobbyScreen() {
                                     img: require('@/assets/images/highland-side.png'),
                                     name: 'Highland',
                                 },
+                                {
+                                    id: 'belted_galloway',
+                                    img: require('@/assets/images/belted-galloway-side.png'),
+                                    name: 'Belted Galloway',
+                                },
+                                {
+                                    id: 'british_white',
+                                    img: require('@/assets/images/british-white-side.png'),
+                                    name: 'British White',
+                                },
+                                {
+                                    id: 'droughtmaster',
+                                    img: require('@/assets/images/droughtmaster-side.png'),
+                                    name: 'Droughtmaster',
+                                },
+                                {
+                                    id: 'jersey',
+                                    img: require('@/assets/images/jersey-side.png'),
+                                    name: 'Jersey',
+                                },
                             ].map(({id, img, name}) => (
                                 <Pressable
                                     key={id}
                                     disabled={!availableBreeds.includes(id)}
                                     onPress={() => setBreed(id as CowBreed)}
                                     className={classNames(
-                                        'flex flex-col gap-2 border-2 p-2',
-                                        id === breed ? 'border-neutral-900' : 'border-transparent',
+                                        'flex flex-col gap-2 border-2 p-1',
+                                        id === breed ? 'border-neutral-300' : 'border-transparent',
                                         !availableBreeds.includes(id) && 'opacity-20'
                                     )}>
                                     <Image source={img}
@@ -236,9 +263,6 @@ export default function LobbyScreen() {
                     </View>
                 </View>
             )}
-            <View className="absolute bottom-4 left-0 right-0 flex items-center">
-                <Text className="text-neutral-200 text-cs">www.hayleybech.me</Text>
-            </View>
         </View>
     );
 }
