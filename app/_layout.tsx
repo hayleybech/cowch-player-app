@@ -7,6 +7,7 @@ import {createContext, useRef} from "react";
 import Peer, {registerWebRTCGlobals} from "@/utils/peer-util";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {DataConnection} from "peerjs";
+import {useFonts} from "expo-font";
 
 registerWebRTCGlobals();
 
@@ -24,6 +25,10 @@ export default function RootLayout() {
     const hostIdRef = useRef<string>('');
     const usernameRef = useRef<string>('');
     const hasConnectedRef = useRef<boolean>(false);
+
+    useFonts({
+        'Pixel Chip XL': require('../assets/fonts/pixel_chip_xl_v1.0.0.ttf'),
+    })
 
     const onDataCallbackRef = useRef<(data: unknown) => void>((data) => console.error('Data callback is missing.'));
     const onDataRef = useRef<(data: unknown) => void>((data) => onDataCallbackRef.current(data));
@@ -43,6 +48,7 @@ export default function RootLayout() {
                 }}>
                     <Stack>
                         <Stack.Screen name="index" options={{title: 'Lobby', headerShown: false}}/>
+                        <Stack.Screen name="breed-selection" options={{title: 'Breed Selection', headerShown: false}}/>
                         <Stack.Screen name="cooow" options={{title: 'Cooow', headerShown: false,}}/>
                         <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
                         <Stack.Screen name="modal" options={{presentation: 'modal', title: 'Modal'}}/>

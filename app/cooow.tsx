@@ -1,7 +1,6 @@
 import {Pressable, Text, View, useWindowDimensions} from 'react-native';
 import "@/assets/css/global.css"
 
-import {Image} from 'expo-image';
 import {useCallback, useContext, useEffect, useReducer, useState} from "react";
 import {Button} from "@/components/ui/Button";
 import {ScreenPropsContext} from "@/app/_layout";
@@ -9,7 +8,6 @@ import * as Haptics from 'expo-haptics';
 import {Direction, SwipeArea} from "@/components/SwipeArea";
 
 import {useRouter} from "expo-router";
-import {useFonts} from "expo-font";
 
 export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
 type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
@@ -94,10 +92,6 @@ export default function CooowScreen() {
     const router = useRouter();
     const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
     const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
-
-    useFonts({
-        'Pixel Chip XL': require('../assets/fonts/pixel_chip_xl_v1.0.0.ttf'),
-    })
 
     const connect = useCallback(() => {
         if (!props.peerRef?.current || !props.hostIdRef.current || !props.usernameRef.current) {
@@ -258,8 +252,6 @@ export default function CooowScreen() {
                     <View className="flex-row items-center gap-2 justify-between">
                         <View>
                             <Pressable onPress={() => router.replace('/')}>
-                                {/*<Image source={require('@/assets/images/cowch-logo.png')}*/}
-                                {/*       className="h-[49px] w-[200px]"/>*/}
                                 <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                             </Pressable>
                             <Text
