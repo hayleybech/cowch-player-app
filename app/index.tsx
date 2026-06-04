@@ -9,6 +9,7 @@ import {useRouter} from "expo-router";
 import {ScreenPropsContext} from "@/app/_layout";
 import classNames from "classnames";
 import {CowBreed} from "@/app/cooow";
+import {useFonts} from "expo-font";
 
 type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
 
@@ -25,6 +26,10 @@ export default function LobbyScreen() {
     const [connStatus, setConnStatus] = useState<ConnectionStatus>('initial');
 
     const router = useRouter();
+
+    useFonts({
+        'Pixel Chip XL': require('../assets/fonts/pixel_chip_xl_v1.0.0.ttf'),
+    })
 
     useEffect(() => {
         if (!props.peerRef) {
