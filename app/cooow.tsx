@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import {Direction, SwipeArea} from "@/components/SwipeArea";
 
 import {useRouter} from "expo-router";
+import {useFonts} from "expo-font";
 
 export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
 type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
@@ -53,9 +54,9 @@ type GameAction =
 function gameReducer(state: GameState, action: GameAction): GameState {
     switch (action.type) {
         case 'PAUSE':
-            return { ...state, isPaused: true };
+            return {...state, isPaused: true};
         case 'RESUME':
-            return { ...state, isPaused: false };
+            return {...state, isPaused: false};
         case 'START_GAME':
             return {
                 ...state,
@@ -66,13 +67,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 winner: undefined,
             };
         case 'CHANGE_DIRECTION':
-            return { ...state, currentDirection: action.payload };
+            return {...state, currentDirection: action.payload};
         case 'POWERUP_STORED':
-            return { ...state, hasPowerup: true };
+            return {...state, hasPowerup: true};
         case 'POWERUP_USED':
-            return { ...state, hasPowerup: false };
+            return {...state, hasPowerup: false};
         case 'DIED':
-            return { ...state, isDead: true };
+            return {...state, isDead: true};
         case 'GAME_OVER':
             return {
                 ...state,
@@ -93,6 +94,10 @@ export default function CooowScreen() {
     const router = useRouter();
     const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
     const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
+
+    useFonts({
+        'Pixel Chip XL': require('../assets/fonts/pixel_chip_xl_v1.0.0.ttf'),
+    })
 
     const connect = useCallback(() => {
         if (!props.peerRef?.current || !props.hostIdRef.current || !props.usernameRef.current) {
@@ -152,28 +157,28 @@ export default function CooowScreen() {
             console.log('action', action);
 
             if (action.type === 'paused') {
-                dispatch({ type: 'PAUSE' });
+                dispatch({type: 'PAUSE'});
             }
             if (action.type === 'resumed') {
-                dispatch({ type: 'RESUME' });
+                dispatch({type: 'RESUME'});
             }
             if (action.type === 'started') {
-                dispatch({ type: 'START_GAME' });
+                dispatch({type: 'START_GAME'});
             }
             if (action.type === 'changed_direction') {
-                dispatch({ type: 'CHANGE_DIRECTION', payload: action.payload });
+                dispatch({type: 'CHANGE_DIRECTION', payload: action.payload});
             }
             if (action.type === 'powerup_stored') {
-                dispatch({ type: 'POWERUP_STORED' });
+                dispatch({type: 'POWERUP_STORED'});
             }
             if (action.type === 'powerup_used') {
-                dispatch({ type: 'POWERUP_USED' });
+                dispatch({type: 'POWERUP_USED'});
             }
             if (action.type === 'died') {
-                dispatch({ type: 'DIED' });
+                dispatch({type: 'DIED'});
             }
             if (action.type === 'game_over') {
-                dispatch({ type: 'GAME_OVER', payload: action.payload });
+                dispatch({type: 'GAME_OVER', payload: action.payload});
             }
         };
 
@@ -217,7 +222,7 @@ export default function CooowScreen() {
         props.connRef.current.send({
             type: 'drop_powerup',
         });
-        dispatch({ type: 'POWERUP_USED' });
+        dispatch({type: 'POWERUP_USED'});
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }, [props.connRef]);
 
@@ -229,7 +234,7 @@ export default function CooowScreen() {
         props.connRef.current.send({
             type: 'use_powerup',
         });
-        dispatch({ type: 'POWERUP_USED' });
+        dispatch({type: 'POWERUP_USED'});
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }, [props.connRef]);
 
@@ -253,10 +258,12 @@ export default function CooowScreen() {
                     <View className="flex-row items-center gap-2 justify-between">
                         <View>
                             <Pressable onPress={() => router.replace('/')}>
-                                <Image source={require('@/assets/images/cowch-logo.png')}
-                                       className="h-[49px] w-[200px]"/>
+                                {/*<Image source={require('@/assets/images/cowch-logo.png')}*/}
+                                {/*       className="h-[49px] w-[200px]"/>*/}
+                                <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                             </Pressable>
-                            <Text className="font-bold text-white">{props.usernameRef.current}</Text>
+                            <Text
+                                className="font-pixel-chip text-shadow text-white text-lg">{props.usernameRef.current}</Text>
                         </View>
                         <Button onPress={requestPauseOrStart}
                                 disabled={!props.connRef.current || (isDead && !isGameEnded)}>
@@ -266,19 +273,26 @@ export default function CooowScreen() {
 
                     {!isLandscape && (
                         <View className="flex items-center">
-                            <Text className="text-blue-600 text-base font-semibold">Best played in landscape 🔄</Text>
+                            <Text className="text-blue-600 text-xl font-pixel-chip text-shadow">Best played in landscape
+                                🔄</Text>
                         </View>
                     )}
 
                     <View className="gap-2 grow flex-1">
-                        <Button onPress={usePowerup}
-                                disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded}
-                                className="grow">
+                        <Button
+                            onPress={usePowerup}
+                            disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded}
+                            className="grow"
+                            textSize="text-2xl"
+                        >
                             Use
                         </Button>
-                        <Button onPress={drop}
-                                disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded}
-                                className="grow">
+                        <Button
+                            onPress={drop}
+                            disabled={!props.connRef.current || isPaused || !hasPowerup || isDead || isGameEnded}
+                            className="grow"
+                            textSize="text-2xl"
+                        >
                             Drop Trap
                         </Button>
                     </View>
@@ -289,7 +303,9 @@ export default function CooowScreen() {
 
             {isDead && !isGameEnded && <YouDiedOverlay/>}
 
-            {isGameEnded && <GameEndedOverlay winner={winner} props={props} onPress={requestPauseOrStart}/>}
+            {isGameEnded &&
+                <GameEndedOverlay winner={winner} props={props} onPress={requestPauseOrStart}/>
+            }
 
             {connStatus === 'reconnecting' && <ReconnectingOverlay/>}
 
@@ -299,18 +315,18 @@ export default function CooowScreen() {
 
 function ReconnectingOverlay() {
     return <View className="absolute inset-0 bg-orange-500/90 z-[60] justify-center items-center p-6">
-        <Text className="text-white font-bold text-6xl mb-2 text-center">CONNECTION LOST</Text>
-        <Text className="text-white text-center text-lg mb-8">Trying to reconnect...</Text>
+        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">CONNECTION LOST</Text>
+        <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">Trying to reconnect...</Text>
     </View>;
 }
 
 function GameEndedOverlay(props: { winner: string | undefined, props: Record<any, any>, onPress: () => void }) {
     return <View className="absolute inset-0 bg-blue-600/90 z-50 justify-center items-center p-6">
-        <Text className="text-white font-bold text-6xl mb-2 text-center">GAME OVER</Text>
-        <Text className="text-white text-center font-bold text-3xl mb-4">
+        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">GAME OVER</Text>
+        <Text className="text-white text-center font-pixel-chip text-shadow text-3xl mb-4">
             {props.winner === props.props.usernameRef.current ? "YOU WON 🏆" : `WINNER: ${props.winner}`}
         </Text>
-        <Text className="text-white text-center text-lg mb-8">The game has ended. Ready for another round?</Text>
+        <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">The game has ended. Ready for another round?</Text>
         <Button onPress={props.onPress} className="w-full max-w-xs">
             Play Again
         </Button>
@@ -319,7 +335,7 @@ function GameEndedOverlay(props: { winner: string | undefined, props: Record<any
 
 function YouDiedOverlay() {
     return <View className="absolute inset-0 bg-red-500/80 z-50 justify-center items-center p-4">
-        <Text className="text-white font-bold text-6xl mb-4 text-center">YOU DIED</Text>
-        <Text className="text-white text-xl text-center">Wait for the next round...</Text>
+        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-4 text-center">YOU DIED</Text>
+        <Text className="text-white text-xl text-center font-pixel-chip text-shadow">Wait for the next round...</Text>
     </View>;
 }

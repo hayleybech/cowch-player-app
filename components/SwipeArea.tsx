@@ -45,7 +45,7 @@ export const SwipeArea: React.FC<SwipeAreaProps> = ({onSwipe, disabled, isDead})
                     isLandscape ? 'h-full w-1/2' : 'w-full h-1/2',
                 )}>
                 <View
-                    className={classNames("h-full w-full border-2 border-dashed border-neutral-400 rounded-3xl flex items-center justify-center bg-neutral-600 relative",
+                    className={classNames("h-full w-full border-2 border-dashed border-neutral-400 flex items-center justify-center bg-neutral-600 relative",
                         isDead && "bg-red-50 border-red-200")}>
                     {!isDead ? (
                         <>
@@ -56,10 +56,10 @@ export const SwipeArea: React.FC<SwipeAreaProps> = ({onSwipe, disabled, isDead})
                                                     className="absolute left-4"/>
                             <MaterialCommunityIcons name="chevron-right" size={32} color="#d4d4d4"
                                                     className="absolute right-4"/>
-                            <Text className="text-neutral-400 font-bold text-lg">Swipe to Move</Text>
+                            <Text className="text-neutral-400 font-pixel-chip text-shadow text-2xl">Swipe to Move</Text>
                         </>
                     ) : (
-                        <Text className="text-red-400 font-bold text-lg text-center px-4">You are dead!{"\n"}Wait for the next round.</Text>
+                        <Text className="text-red-400 font-pixel-chip text-shadow text-xl text-center px-4">You are dead!{"\n"}Wait for the next round.</Text>
                     )}
                 </View>
             </View>

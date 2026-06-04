@@ -128,17 +128,18 @@ export default function LobbyScreen() {
                     <View className="flex justify-center items-center h-full">
                         <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
                             <View className="mb-4">
-                                <Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>
+                                {/*<Image source={require('@/assets/images/cowch-logo.png')} className="h-[49px] w-[200px]"/>*/}
+                                <Text className="text-white text-7xl italic font-pixel-chip text-shadow">cowch</Text>
                             </View>
 
                             <View className="mb-4">
-                                <Text className="text-lg text-white">
-                                    <Text>Open a lobby at </Text>
-                                    <Text className="font-bold">cowch.laravel.cloud</Text>
+                                <Text className="text-lg text-white font-pixel-chip text-shadow-lg">
+                                    <Text className="text-gray-300">Open a lobby at </Text>
+                                    <Text className="text-2xl">cowch.laravel.cloud</Text>
                                 </Text>
                             </View>
 
-                            <Text className="font-bold text-lg text-white">Lobby Code</Text>
+                            <Text className="text-xl text-white font-pixel-chip text-shadow">Lobby Code</Text>
                             <TextInput
                                 onChangeText={(value) => {
                                     const upperValue = value.toUpperCase();
@@ -148,23 +149,25 @@ export default function LobbyScreen() {
                                 value={hostId}
                                 autoCapitalize="characters"
                                 maxLength={4}
-                                className="mb-4 text-lg text-white border border-neutral-400 rounded py-0.5 px-2 focus:border-neutral-800 focus:rounded"
+                                className="mb-4 text-xl text-white text-shadow font-pixel-chip border border-neutral-400 py-0.5 px-2 focus:border-white [outline:none!important]"
                             />
 
-                            <Text className="font-bold text-lg text-white">Username</Text>
+                            <Text className="text-xl text-shadow font-pixel-chip text-white">Username</Text>
                             <TextInput
                                 onChangeText={(value) => {
                                     setUsername(value);
                                     props.usernameRef.current = value;
                                 }}
-                                maxLength={15}
+                                maxLength={8}
                                 defaultValue={username}
-                                className="mb-4 text-lg border border-neutral-400 text-white py-0.5 px-2 rounded focus:border-neutral-800 focus:rounded"
+                                className="mb-4 text-xl text-shadow font-pixel-chip border border-neutral-400 text-white py-0.5 px-2 focus:border-white [outline:none!important]"
                             />
 
                             <View className="mb-3">
                                 <Button onPress={connect} disabled={!hostId || !username}>
-                                    Connect
+                                    <Text className="text-2xl text-shadow font-pixel-chip">
+                                        Connect
+                                    </Text>
                                 </Button>
 
                             </View>
@@ -177,7 +180,7 @@ export default function LobbyScreen() {
                         </View>
 
                         <View className="left-0 right-0 flex items-center">
-                            <Text className="text-neutral-200 text-cs">www.hayleybech.me</Text>
+                            <Text className="text-neutral-200 text-lg text-shadow font-pixel-chip">www.hayleybech.me</Text>
                         </View>
 
                     </View>
@@ -188,8 +191,9 @@ export default function LobbyScreen() {
                 <View className="flex justify-center items-center h-full pt-3 px-4">
                     <View className="w-full h-full shrink flex justify-center">
                         <View className="flex-row justify-between items-center mb-1">
-                            <Image source={require('@/assets/images/cowch-logo.png')} className="h-[25px] w-[100px]"/>
-                            <Text className="text-xl font-bold text-white">Hello, {username}!</Text>
+                            {/*<Image source={require('@/assets/images/cowch-logo.png')} className="h-[25px] w-[100px]"/>*/}
+                            <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
+                            <Text className="text-xl text-white font-pixel-chip text-shadow">Hello, {username}!</Text>
                         </View>
                         <View className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-1 p-1 w-full">
                             {[
@@ -240,19 +244,23 @@ export default function LobbyScreen() {
                                     onPress={() => setBreed(id as CowBreed)}
                                     className={classNames(
                                         'flex flex-col gap-2 border-2 p-1',
-                                        id === breed ? 'border-neutral-300' : 'border-transparent',
+                                        id === breed ? 'border-neutral-300 bg-neutral-700' : 'border-transparent',
                                         !availableBreeds.includes(id) && 'opacity-20'
                                     )}>
                                     <Image source={img}
                                            className="aspect-[2/1] w-full shrink"/>
-                                    <Text className="font-bold text-white">{name}</Text>
+                                    <View className="px-2">
+                                        <Text className="text-white font-pixel-chip text-shadow text-lg">{name}</Text>
+                                    </View>
                                 </Pressable>
                             ))}
                         </View>
 
                         <View className="mb-8">
                             <Button onPress={join}>
-                                Join
+                                <Text className="font-pixel-chip text-shadow text-xl">
+                                    Join
+                                </Text>
                             </Button>
                         </View>
 

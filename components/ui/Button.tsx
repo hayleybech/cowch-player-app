@@ -7,6 +7,7 @@ export const Button = (props: PropsWithChildren<{
     onPress: ((event: GestureResponderEvent) => void) | null | undefined;
     disabled?: boolean;
     className?: string;
+    textSize?: string;
 }>) => (
     <Pressable onPress={props.onPress} disabled={props.disabled}
                className={classNames(
@@ -15,6 +16,6 @@ export const Button = (props: PropsWithChildren<{
                    props.className ?? ''
                )}>
 
-        <Text className="text-white text-center font-bold text-md">{props.children}</Text>
+        <Text className={`text-white text-center ${props.textSize ?? 'text-lg'} font-pixel-chip text-shadow`}>{props.children}</Text>
     </Pressable>
 )
