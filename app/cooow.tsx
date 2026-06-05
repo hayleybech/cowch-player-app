@@ -11,10 +11,9 @@ import {useRouter} from "expo-router";
 
 export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
 type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
-type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'started' } | {
-    type: 'changed_direction',
-    payload: Direction
-} | { type: 'powerup_stored' } | { type: 'powerup_used' } | { type: 'died' } | {
+type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'started' } | { type: 'powerup_stored' } | {
+    type: 'powerup_used'
+} | { type: 'died' } | {
     type: 'game_over',
     payload: { winner: string }
 };
@@ -22,7 +21,6 @@ type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'star
 interface GameState {
     isPaused: boolean;
     hasStarted: boolean;
-    currentDirection: Direction | undefined;
     hasPowerup: boolean;
     isDead: boolean;
     isGameEnded: boolean;
@@ -32,7 +30,6 @@ interface GameState {
 const initialGameState: GameState = {
     isPaused: true,
     hasStarted: false,
-    currentDirection: undefined,
     hasPowerup: false,
     isDead: false,
     isGameEnded: false,
@@ -43,7 +40,6 @@ type GameAction =
     | { type: 'PAUSE' }
     | { type: 'RESUME' }
     | { type: 'START_GAME' }
-    | { type: 'CHANGE_DIRECTION', payload: Direction }
     | { type: 'POWERUP_STORED' }
     | { type: 'POWERUP_USED' }
     | { type: 'DIED' }
@@ -64,8 +60,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 isDead: false,
                 winner: undefined,
             };
-        case 'CHANGE_DIRECTION':
-            return {...state, currentDirection: action.payload};
         case 'POWERUP_STORED':
             return {...state, hasPowerup: true};
         case 'POWERUP_USED':
@@ -84,7 +78,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 }
 
 export default function CooowScreen() {
-    const { props, sendData, connectToHost, setOnDataReceived } = usePeer();
+    const {props, sendData, connectToHost, setOnDataReceived} = usePeer();
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
@@ -131,9 +125,6 @@ export default function CooowScreen() {
             }
             if (action.type === 'started') {
                 dispatch({type: 'START_GAME'});
-            }
-            if (action.type === 'changed_direction') {
-                dispatch({type: 'CHANGE_DIRECTION', payload: action.payload});
             }
             if (action.type === 'powerup_stored') {
                 dispatch({type: 'POWERUP_STORED'});
@@ -275,7 +266,8 @@ function GameEndedOverlay(props: { winner: string | undefined, props: Record<any
         <Text className="text-white text-center font-pixel-chip text-shadow text-3xl mb-4">
             {props.winner === props.props.username ? "YOU WON 🏆" : `WINNER: ${props.winner}`}
         </Text>
-        <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">The game has ended. Ready for another round?</Text>
+        <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">The game has ended. Ready for
+            another round?</Text>
         <Button onPress={props.onPress} className="w-full max-w-xs">
             Play Again
         </Button>

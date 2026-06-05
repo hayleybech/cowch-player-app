@@ -11,9 +11,6 @@ import {useFonts} from "expo-font";
 
 registerWebRTCGlobals();
 
-export const unstable_settings = {
-    anchor: '(tabs)',
-};
 export const ScreenPropsContext = createContext<Record<any, any>>({});
 
 export default function RootLayout() {
@@ -52,8 +49,6 @@ export default function RootLayout() {
                         <Stack.Screen name="index" options={{title: 'Lobby', headerShown: false}}/>
                         <Stack.Screen name="breed-selection" options={{title: 'Breed Selection', headerShown: false}}/>
                         <Stack.Screen name="cooow" options={{title: 'Cooow', headerShown: false,}}/>
-                        <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-                        <Stack.Screen name="modal" options={{presentation: 'modal', title: 'Modal'}}/>
                     </Stack>
                     <StatusBar style="auto"/>
                 </ScreenPropsContext.Provider>
