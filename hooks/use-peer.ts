@@ -44,8 +44,8 @@ export function usePeer() {
             return;
         }
 
-        props.hostIdRef.current = hostId;
-        props.usernameRef.current = username;
+        props.setHostId(hostId);
+        props.setUsername(username);
 
         const conn = props.peerRef.current.connect(`COWCH-${hostId}`);
         
@@ -72,7 +72,7 @@ export function usePeer() {
         conn.on('close', () => console.log('host closed'));
         
         return conn;
-    }, [props.peerRef, props.connRef, props.onDataCallbackRef, props.hostIdRef, props.usernameRef, props.hasConnectedRef]);
+    }, [props.peerRef, props.connRef, props.onDataCallbackRef, props.setHostId, props.setUsername, props.hasConnectedRef]);
 
     const setOnDataReceived = useCallback((cb: (data: any) => void) => {
         props.onDataCallbackRef.current = cb;

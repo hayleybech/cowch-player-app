@@ -94,18 +94,18 @@ export default function CooowScreen() {
     const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
 
     const connect = useCallback(() => {
-        if (!props.hostIdRef.current || !props.usernameRef.current) {
+        if (!props.hostId || !props.username) {
             return;
         }
 
-        const conn = connectToHost(props.hostIdRef.current, props.usernameRef.current);
+        const conn = connectToHost(props.hostId, props.username);
         if (conn) {
             conn.on('open', () => setConnStatus('open'));
             conn.on('disconnected', () => setConnStatus('reconnecting'));
             conn.on('close', () => setConnStatus('reconnecting'));
         }
 
-    }, [connectToHost, props.hostIdRef, props.usernameRef]);
+    }, [connectToHost, props.hostId, props.username]);
 
     useEffect(() => {
         let timeout: any;
@@ -212,7 +212,7 @@ export default function CooowScreen() {
                                 <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                             </Pressable>
                             <Text
-                                className="font-pixel-chip text-shadow text-white text-lg">{props.usernameRef.current}</Text>
+                                className="font-pixel-chip text-shadow text-white text-lg">{props.username}</Text>
                         </View>
                         <Button onPress={requestPauseOrStart}
                                 disabled={!props.connRef.current || (isDead && !isGameEnded)}>
@@ -273,7 +273,7 @@ function GameEndedOverlay(props: { winner: string | undefined, props: Record<any
     return <View className="absolute inset-0 bg-blue-600/90 z-50 justify-center items-center p-6">
         <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">GAME OVER</Text>
         <Text className="text-white text-center font-pixel-chip text-shadow text-3xl mb-4">
-            {props.winner === props.props.usernameRef.current ? "YOU WON 🏆" : `WINNER: ${props.winner}`}
+            {props.winner === props.props.username ? "YOU WON 🏆" : `WINNER: ${props.winner}`}
         </Text>
         <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">The game has ended. Ready for another round?</Text>
         <Button onPress={props.onPress} className="w-full max-w-xs">

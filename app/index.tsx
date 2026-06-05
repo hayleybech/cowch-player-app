@@ -1,7 +1,7 @@
 import {Text, TextInput, useWindowDimensions, View} from 'react-native';
 import "@/assets/css/global.css"
 
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect} from "react";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
 import classNames from "classnames";
@@ -9,8 +9,6 @@ import {usePeer} from "@/hooks/use-peer";
 
 export default function LobbyScreen() {
     const { props, connectToHost, setOnDataReceived } = usePeer();
-    const [hostId, setHostId] = useState<string>(props.hostIdRef?.current || '');
-    const [username, setUsername] = useState<string>(props.usernameRef?.current || '');
 
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
@@ -26,12 +24,12 @@ export default function LobbyScreen() {
     }, [setOnDataReceived, router]);
 
     const connect = useCallback(() => {
-        if (!hostId || !username) {
+        if (!props.hostId || !props.username) {
             return;
         }
 
-        connectToHost(hostId, username);
-    }, [hostId, username, connectToHost]);
+        connectToHost(props.hostId, props.username);
+    }, [props.hostId, props.username, connectToHost]);
 
     return (
         <View className="bg-neutral-800 flex-1">
@@ -51,12 +49,8 @@ export default function LobbyScreen() {
 
                         <Text className="text-xl text-white font-pixel-chip text-shadow">Lobby Code</Text>
                         <TextInput
-                            onChangeText={(value) => {
-                                const upperValue = value.toUpperCase();
-                                setHostId(upperValue);
-                                props.hostIdRef.current = upperValue;
-                            }}
-                            value={hostId}
+                            onChangeText={(value) => props.setHostId(value.toUpperCase())}
+                            value={props.hostId}
                             autoCapitalize="characters"
                             maxLength={4}
                             className="mb-4 text-xl text-white text-shadow font-pixel-chip border border-neutral-400 py-0.5 px-2 focus:border-white [outline:none!important]"
@@ -64,17 +58,14 @@ export default function LobbyScreen() {
 
                         <Text className="text-xl text-shadow font-pixel-chip text-white">Username</Text>
                         <TextInput
-                            onChangeText={(value) => {
-                                setUsername(value);
-                                props.usernameRef.current = value;
-                            }}
+                            onChangeText={(value) => props.setUsername(value)}
                             maxLength={8}
-                            defaultValue={username}
+                            value={props.username}
                             className="mb-4 text-xl text-shadow font-pixel-chip border border-neutral-400 text-white py-0.5 px-2 focus:border-white [outline:none!important]"
                         />
 
                         <View className="mb-3">
-                            <Button onPress={connect} disabled={!hostId || !username}>
+                            <Button onPress={connect} disabled={!props.hostId || !props.username}>
                                 <Text className="text-2xl text-shadow font-pixel-chip">
                                     Connect
                                 </Text>

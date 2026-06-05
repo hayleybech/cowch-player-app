@@ -3,7 +3,7 @@ import {Stack} from 'expo-router';
 import {StatusBar} from 'expo-status-bar';
 
 import {useColorScheme} from '@/hooks/use-color-scheme';
-import {createContext, useRef} from "react";
+import {createContext, useRef, useState} from "react";
 import Peer, {registerWebRTCGlobals} from "@/utils/peer-util";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {DataConnection} from "peerjs";
@@ -22,8 +22,8 @@ export default function RootLayout() {
     const peerRef = useRef<typeof Peer>(null);
     const heartbeatRef = useRef(null);
     const connRef = useRef<DataConnection>(null);
-    const hostIdRef = useRef<string>('');
-    const usernameRef = useRef<string>('');
+    const [hostId, setHostId] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
     const hasConnectedRef = useRef<boolean>(false);
 
     useFonts({
@@ -42,8 +42,10 @@ export default function RootLayout() {
                     connRef,
                     onDataRef,
                     onDataCallbackRef,
-                    hostIdRef,
-                    usernameRef,
+                    hostId,
+                    setHostId,
+                    username,
+                    setUsername,
                     hasConnectedRef,
                 }}>
                     <Stack>

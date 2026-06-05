@@ -58,7 +58,7 @@ export default function BreedSelectionScreen() {
                         <Pressable onPress={() => router.replace('/')}>
                             <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                         </Pressable>
-                        <Text className="text-xl text-white font-pixel-chip text-shadow">Hello, {props.usernameRef.current}!</Text>
+                        <Text className="text-xl text-white font-pixel-chip text-shadow">Hello, {props.username}!</Text>
                     </View>
                     <View className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-1 p-1 w-full">
                         {[
