@@ -11,7 +11,9 @@ import {CowBreed} from "@/app/cooow";
 export default function BreedSelectionScreen() {
     const props = useContext(ScreenPropsContext);
     const [breed, setBreed] = useState<CowBreed>('highland');
-    const [availableBreeds, setAvailableBreeds] = useState<string[]>(['holstein-friesian', 'hereford', 'angus', 'highland']);
+    const [availableBreeds, setAvailableBreeds] = useState<string[]>([
+        'holstein_friesian', 'hereford', 'angus', 'highland', 'belted_galloway', 'british_white', 'droughtmaster', 'jersey',
+    ]);
 
     const router = useRouter();
 
