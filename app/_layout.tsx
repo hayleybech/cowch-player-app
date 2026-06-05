@@ -21,6 +21,7 @@ export default function RootLayout() {
     const connRef = useRef<DataConnection>(null);
     const [hostId, setHostId] = useState<string>('');
     const [username, setUsername] = useState<string>('');
+    const [breed, setBreed] = useState<string>('');
     const hasConnectedRef = useRef<boolean>(false);
 
     useFonts({
@@ -43,6 +44,8 @@ export default function RootLayout() {
                     setHostId,
                     username,
                     setUsername,
+                    breed,
+                    setBreed,
                     hasConnectedRef,
                 }}>
                     <Stack>

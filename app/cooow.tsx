@@ -1,15 +1,17 @@
 import {Pressable, Text, View, useWindowDimensions} from 'react-native';
 import "@/assets/css/global.css"
+import {Image} from 'expo-image';
 
 import {useCallback, useEffect, useReducer, useState} from "react";
 import {Button} from "@/components/ui/Button";
 import * as Haptics from 'expo-haptics';
 import {Direction, SwipeArea} from "@/components/SwipeArea";
 import {usePeer} from "@/hooks/use-peer";
+import {BREED_DATA} from "@/constants/breeds";
 
 import {useRouter} from "expo-router";
 
-export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
+export type CowBreed = 'holstein_friesian' | 'angus' | 'hereford' | 'highland' | 'belted_galloway' | 'british_white' | 'droughtmaster' | 'jersey';
 type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
 type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'started' } | { type: 'powerup_stored' } | {
     type: 'powerup_used'
@@ -202,12 +204,26 @@ export default function CooowScreen() {
                             <Pressable onPress={() => router.replace('/')}>
                                 <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                             </Pressable>
-                            <Text
-                                className="font-pixel-chip text-shadow text-white text-lg">{props.username}</Text>
+                        </View>
+                        <View className="flex-row items-center justify-start gap-1">
+                            {props.breed && (
+                                <View>
+                                    <Image
+                                        source={BREED_DATA.find(b => b.id === props.breed)?.img}
+                                        className="aspect-[2/1] h-8 shrink"
+                                        style={{ width: 64, height: 32 }}
+                                    />
+                                </View>
+                            )}
+                            <View>
+                                <Text className="font-pixel-chip text-shadow text-white text-lg">
+                                    {props.username}
+                                </Text>
+                            </View>
                         </View>
                         <Button onPress={requestPauseOrStart}
                                 disabled={!props.connRef.current || (isDead && !isGameEnded)}>
-                            {isGameEnded ? 'Play Again' : (!hasStarted ? 'Start Game' : (isPaused ? 'Resume' : 'Pause'))}
+                            {isGameEnded ? 'Restart' : (!hasStarted ? 'Start' : (isPaused ? 'Resume' : 'Pause'))}
                         </Button>
                     </View>
 

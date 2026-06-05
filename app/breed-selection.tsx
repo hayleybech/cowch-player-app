@@ -7,6 +7,7 @@ import {useRouter} from "expo-router";
 import classNames from "classnames";
 import {CowBreed} from "@/app/cooow";
 import {usePeer} from "@/hooks/use-peer";
+import {BREED_DATA} from "@/constants/breeds";
 
 export default function BreedSelectionScreen() {
     const { props, sendData, setOnDataReceived } = usePeer();
@@ -34,6 +35,9 @@ export default function BreedSelectionScreen() {
                 });
             }
             if (data?.type === 'joined') {
+                if (data.payload?.breed) {
+                    props.setBreed(data.payload.breed);
+                }
                 router.navigate('/cooow');
             }
         });
@@ -61,48 +65,7 @@ export default function BreedSelectionScreen() {
                         <Text className="text-xl text-white font-pixel-chip text-shadow">Hello, {props.username}!</Text>
                     </View>
                     <View className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-1 p-1 w-full">
-                        {[
-                            {
-                                id: 'holstein_friesian',
-                                img: require('@/assets/images/holstein-friesian-side.png'),
-                                name: 'Holstein Friesian',
-                            },
-                            {
-                                id: 'hereford',
-                                img: require('@/assets/images/hereford-side.png'),
-                                name: 'Hereford',
-                            },
-                            {
-                                id: 'angus',
-                                img: require('@/assets/images/angus-side.png'),
-                                name: 'Angus',
-                            },
-                            {
-                                id: 'highland',
-                                img: require('@/assets/images/highland-side.png'),
-                                name: 'Highland',
-                            },
-                            {
-                                id: 'belted_galloway',
-                                img: require('@/assets/images/belted-galloway-side.png'),
-                                name: 'Belted Galloway',
-                            },
-                            {
-                                id: 'british_white',
-                                img: require('@/assets/images/british-white-side.png'),
-                                name: 'British White',
-                            },
-                            {
-                                id: 'droughtmaster',
-                                img: require('@/assets/images/droughtmaster-side.png'),
-                                name: 'Droughtmaster',
-                            },
-                            {
-                                id: 'jersey',
-                                img: require('@/assets/images/jersey-side.png'),
-                                name: 'Jersey',
-                            },
-                        ].map(({id, img, name}) => (
+                        {BREED_DATA.map(({id, img, name}) => (
                             <Pressable
                                 key={id}
                                 disabled={!availableBreeds.includes(id)}
@@ -112,8 +75,7 @@ export default function BreedSelectionScreen() {
                                     id === breed ? 'border-neutral-300 bg-neutral-700' : 'border-transparent',
                                     !availableBreeds.includes(id) && 'opacity-20'
                                 )}>
-                                <Image source={img}
-                                       className="aspect-[2/1] w-full shrink"/>
+                                <Image source={img} className="aspect-[2/1] w-full shrink" />
                                 <View className="px-2">
                                     <Text className="text-white font-pixel-chip text-shadow text-lg">{name}</Text>
                                 </View>
