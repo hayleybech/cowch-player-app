@@ -1,15 +1,14 @@
 import {Text, TextInput, useWindowDimensions, View} from 'react-native';
 import "@/assets/css/global.css"
 
-import {useCallback, useContext, useEffect, useState} from "react";
-import Peer, {makePeerHeartbeater} from "@/utils/peer-util";
+import {useCallback, useEffect, useState} from "react";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
-import {ScreenPropsContext} from "@/app/_layout";
 import classNames from "classnames";
+import {usePeer} from "@/hooks/use-peer";
 
 export default function LobbyScreen() {
-    const props = useContext(ScreenPropsContext);
+    const { props, connectToHost, setOnDataReceived } = usePeer();
     const [hostId, setHostId] = useState<string>(props.hostIdRef?.current || '');
     const [username, setUsername] = useState<string>(props.usernameRef?.current || '');
 
@@ -19,73 +18,20 @@ export default function LobbyScreen() {
     const router = useRouter();
 
     useEffect(() => {
-        if (!props.peerRef) {
-            return;
-        }
-
-        const peer = new Peer();
-        props.peerRef.current = peer;
-
-        peer.on('open', (id: string) => {
-            console.log('broker ready');
-
-            props.heartbeatRef.current = makePeerHeartbeater(peer);
-        });
-        peer.on('disconnected', (id: string) => console.log('broker disconnected: ', id));
-        peer.on('closed', () => console.log('broker closed'));
-        peer.on('error', (error: string) => console.error('broker error', error));
-
-        return () => {
-            peer.destroy();
-
-            props.heartbeatRef.current.stop();
-        };
-    }, [props.heartbeatRef, props.peerRef]);
-
-    useEffect(() => {
-        props.onDataCallbackRef.current = (data: any) => {
+        setOnDataReceived((data: any) => {
             if (data?.type === 'player_joined') {
                 router.navigate('/breed-selection');
             }
-        };
-    }, [props.onDataCallbackRef, router]);
+        });
+    }, [setOnDataReceived, router]);
 
     const connect = useCallback(() => {
-        if (!props.peerRef?.current || !hostId || !username) {
+        if (!hostId || !username) {
             return;
         }
 
-        props.hostIdRef.current = hostId;
-        props.usernameRef.current = username;
-
-        const conn = props.peerRef.current.connect(`COWCH-${hostId}`);
-
-        conn.on('open', function () {
-            console.log('host connection opened');
-
-            props.connRef.current = conn;
-            conn.on('data', props.onDataRef.current);
-
-            conn.send({
-                type: 'connect',
-                payload: {username},
-            })
-
-            props.hasConnectedRef.current = true;
-        });
-
-
-        conn.on('error', (error: string) => {
-            console.log('host connection error', error);
-        });
-        conn.on('disconnected', () => {
-            console.log('host disconnected');
-        });
-        conn.on('close', () => {
-            console.log('host closed');
-        });
-
-    }, [hostId, props.connRef, props.hasConnectedRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef, username]);
+        connectToHost(hostId, username);
+    }, [hostId, username, connectToHost]);
 
     return (
         <View className="bg-neutral-800 flex-1">

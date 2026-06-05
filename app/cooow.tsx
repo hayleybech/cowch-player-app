@@ -1,11 +1,11 @@
 import {Pressable, Text, View, useWindowDimensions} from 'react-native';
 import "@/assets/css/global.css"
 
-import {useCallback, useContext, useEffect, useReducer, useState} from "react";
+import {useCallback, useEffect, useReducer, useState} from "react";
 import {Button} from "@/components/ui/Button";
-import {ScreenPropsContext} from "@/app/_layout";
 import * as Haptics from 'expo-haptics';
 import {Direction, SwipeArea} from "@/components/SwipeArea";
+import {usePeer} from "@/hooks/use-peer";
 
 import {useRouter} from "expo-router";
 
@@ -84,7 +84,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 }
 
 export default function CooowScreen() {
-    const props = useContext(ScreenPropsContext);
+    const { props, sendData, connectToHost, setOnDataReceived } = usePeer();
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
@@ -94,41 +94,18 @@ export default function CooowScreen() {
     const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
 
     const connect = useCallback(() => {
-        if (!props.peerRef?.current || !props.hostIdRef.current || !props.usernameRef.current) {
+        if (!props.hostIdRef.current || !props.usernameRef.current) {
             return;
         }
 
-        const conn = props.peerRef.current.connect(`COWCH-${props.hostIdRef.current}`);
+        const conn = connectToHost(props.hostIdRef.current, props.usernameRef.current);
+        if (conn) {
+            conn.on('open', () => setConnStatus('open'));
+            conn.on('disconnected', () => setConnStatus('reconnecting'));
+            conn.on('close', () => setConnStatus('reconnecting'));
+        }
 
-        conn.on('open', function () {
-            console.log('host connection opened (reconnected)');
-
-            props.connRef.current = conn;
-            conn.on('data', props.onDataRef.current);
-
-            conn.send({
-                type: 'connect',
-                payload: {username: props.usernameRef.current},
-            })
-
-            setConnStatus('open');
-        });
-
-        conn.on('error', (error: string) => {
-            console.log('host connection error', error);
-        });
-
-        conn.on('disconnected', () => {
-            console.log('host disconnected');
-            setConnStatus('reconnecting');
-        });
-
-        conn.on('close', () => {
-            console.log('host closed');
-            setConnStatus('reconnecting');
-        });
-
-    }, [props.connRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef]);
+    }, [connectToHost, props.hostIdRef, props.usernameRef]);
 
     useEffect(() => {
         let timeout: any;
@@ -141,11 +118,7 @@ export default function CooowScreen() {
     }, [connStatus, connect]);
 
     useEffect(() => {
-        if (!props.connRef.current) {
-            return;
-        }
-
-        props.onDataCallbackRef.current = (data: unknown) => {
+        setOnDataReceived((data: unknown) => {
             const action = data as GameNotification;
 
             console.log('action', action);
@@ -174,14 +147,14 @@ export default function CooowScreen() {
             if (action.type === 'game_over') {
                 dispatch({type: 'GAME_OVER', payload: action.payload});
             }
-        };
+        });
 
         const handleClose = () => {
             setConnStatus('reconnecting');
         };
 
-        props.connRef.current.on('close', handleClose);
-        props.connRef.current.on('disconnected', handleClose);
+        props.connRef.current?.on('close', handleClose);
+        props.connRef.current?.on('disconnected', handleClose);
 
         return () => {
             if (props.connRef.current) {
@@ -189,60 +162,44 @@ export default function CooowScreen() {
                 props.connRef.current.off('disconnected', handleClose);
             }
         }
-    }, [props.connRef, props.onDataCallbackRef]);
+    }, [props.connRef, setOnDataReceived]);
 
     const requestPauseOrStart = useCallback(() => {
-        if (!props.connRef.current) {
-            return;
-        }
-
         if (isGameEnded) {
-            props.connRef.current.send({
+            sendData({
                 type: 'start_game',
             })
             return;
         }
 
-        props.connRef.current.send({
+        sendData({
             type: hasStarted ? 'pause' : 'start_game',
         })
-    }, [hasStarted, props.connRef, isGameEnded])
+    }, [hasStarted, isGameEnded, sendData])
 
     const drop = useCallback(() => {
-        if (!props.connRef.current) {
-            return;
-        }
-
-        props.connRef.current.send({
+        sendData({
             type: 'drop_powerup',
         });
         dispatch({type: 'POWERUP_USED'});
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }, [props.connRef]);
+    }, [sendData]);
 
     const usePowerup = useCallback(() => {
-        if (!props.connRef.current) {
-            return;
-        }
-
-        props.connRef.current.send({
+        sendData({
             type: 'use_powerup',
         });
         dispatch({type: 'POWERUP_USED'});
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }, [props.connRef]);
+    }, [sendData]);
 
     const move = useCallback((direction: Direction) => {
-        if (!props.connRef.current) {
-            return;
-        }
-
-        props.connRef.current.send({
+        sendData({
             type: 'move',
             payload: direction,
         });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, [props.connRef]);
+    }, [sendData]);
 
     return (
         <View className="bg-neutral-800 flex-1 relative">

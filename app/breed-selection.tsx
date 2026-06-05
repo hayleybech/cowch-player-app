@@ -1,15 +1,15 @@
 import {Pressable, Text, View} from 'react-native';
 import "@/assets/css/global.css"
 import {Image} from 'expo-image';
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
-import {ScreenPropsContext} from "@/app/_layout";
 import classNames from "classnames";
 import {CowBreed} from "@/app/cooow";
+import {usePeer} from "@/hooks/use-peer";
 
 export default function BreedSelectionScreen() {
-    const props = useContext(ScreenPropsContext);
+    const { props, sendData, setOnDataReceived } = usePeer();
     const [breed, setBreed] = useState<CowBreed>('highland');
     const [availableBreeds, setAvailableBreeds] = useState<string[]>([
         'holstein_friesian', 'hereford', 'angus', 'highland', 'belted_galloway', 'british_white', 'droughtmaster', 'jersey',
@@ -18,7 +18,7 @@ export default function BreedSelectionScreen() {
     const router = useRouter();
 
     useEffect(() => {
-        props.onDataCallbackRef.current = (data: any) => {
+        setOnDataReceived((data: any) => {
             if (data?.type === 'player_joined') {
                 const newAvailableBreeds = data.payload as string[];
                 setAvailableBreeds(newAvailableBreeds);
@@ -36,19 +36,19 @@ export default function BreedSelectionScreen() {
             if (data?.type === 'joined') {
                 router.navigate('/cooow');
             }
-        };
-    }, [props.onDataCallbackRef, router]);
+        });
+    }, [setOnDataReceived, router]);
 
     const join = useCallback(() => {
-        if (!props.connRef.current || !breed) {
+        if (!breed) {
             return;
         }
 
-        props.connRef.current.send({
+        sendData({
             type: 'join',
             payload: {breed},
         });
-    }, [breed, props.connRef]);
+    }, [breed, sendData]);
 
     return (
         <View className="bg-neutral-800 flex-1">
