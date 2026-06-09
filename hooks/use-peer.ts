@@ -1,6 +1,7 @@
 import { useContext, useEffect, useCallback } from 'react';
 import Peer, { makePeerHeartbeater } from "@/utils/peer-util";
 import { ScreenPropsContext } from "@/app/_layout";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export function usePeer() {
     const props = useContext(ScreenPropsContext);
@@ -32,11 +33,15 @@ export function usePeer() {
 
     const sendData = useCallback((data: any) => {
         if (props.connRef.current?.open) {
-            props.connRef.current.send(data);
+            const dataToSend = {
+                ...data,
+                uuid: props.playerUuid
+            };
+            props.connRef.current.send(dataToSend);
         } else {
             console.warn('sendData called but connection is not open');
         }
-    }, [props.connRef]);
+    }, [props.connRef, props.playerUuid]);
 
     const connectToHost = useCallback((hostId: string, username: string, onOpen?: () => void) => {
         if (!props.peerRef.current) {
@@ -53,6 +58,12 @@ export function usePeer() {
             console.log('host connection opened');
             props.connRef.current = conn;
             conn.on('data', (data: any) => {
+                if (data?.type === 'connected' && data?.payload?.uuid) {
+                    const newUuid = data.payload.uuid;
+                    props.setPlayerUuid(newUuid);
+                    AsyncStorage.setItem('playerUuid', newUuid).catch(e => console.error('Failed to save playerUuid', e));
+                }
+
                 if (props.onDataCallbackRef.current) {
                     props.onDataCallbackRef.current(data);
                 }
@@ -60,7 +71,10 @@ export function usePeer() {
             
             conn.send({
                 type: 'connect',
-                payload: { username },
+                payload: { 
+                    username,
+                    uuid: props.playerUuid
+                },
             });
             
             props.hasConnectedRef.current = true;
@@ -72,7 +86,7 @@ export function usePeer() {
         conn.on('close', () => console.log('host closed'));
         
         return conn;
-    }, [props.peerRef, props.connRef, props.onDataCallbackRef, props.setHostId, props.setUsername, props.hasConnectedRef]);
+    }, [props]);
 
     const setOnDataReceived = useCallback((cb: (data: any) => void) => {
         props.onDataCallbackRef.current = cb;

@@ -3,11 +3,12 @@ import {Stack} from 'expo-router';
 import {StatusBar} from 'expo-status-bar';
 
 import {useColorScheme} from '@/hooks/use-color-scheme';
-import {createContext, useRef, useState} from "react";
+import {createContext, useEffect, useRef, useState} from "react";
 import Peer, {registerWebRTCGlobals} from "@/utils/peer-util";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {DataConnection} from "peerjs";
 import {useFonts} from "expo-font";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 registerWebRTCGlobals();
 
@@ -22,7 +23,22 @@ export default function RootLayout() {
     const [hostId, setHostId] = useState<string>('');
     const [username, setUsername] = useState<string>('');
     const [breed, setBreed] = useState<string>('');
+    const [playerUuid, setPlayerUuid] = useState<string | null>(null);
     const hasConnectedRef = useRef<boolean>(false);
+
+    useEffect(() => {
+        const loadUuid = async () => {
+            try {
+                const storedUuid = await AsyncStorage.getItem('playerUuid');
+                if (storedUuid) {
+                    setPlayerUuid(storedUuid);
+                }
+            } catch (e) {
+                console.error('Failed to load player uuid from storage', e);
+            }
+        };
+        loadUuid();
+    }, []);
 
     useFonts({
         'Pixel Chip XL': require('../assets/fonts/pixel_chip_xl_v1.0.0.ttf'),
@@ -46,6 +62,8 @@ export default function RootLayout() {
                     setUsername,
                     breed,
                     setBreed,
+                    playerUuid,
+                    setPlayerUuid,
                     hasConnectedRef,
                 }}>
                     <Stack>
