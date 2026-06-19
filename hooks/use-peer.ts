@@ -53,44 +53,94 @@ export function usePeer() {
         props.setUsername(username);
 
         const conn = props.peerRef.current.connect(`COWCH-${hostId}`);
-        
-        conn.on('open', () => {
-            console.log('host connection opened');
-            props.connRef.current = conn;
-            conn.on('data', (data: any) => {
-                if (data?.type === 'connected' && data?.payload?.uuid) {
-                    const newUuid = data.payload.uuid;
-                    props.setPlayerUuid(newUuid);
-                    AsyncStorage.setItem('playerUuid', newUuid).catch(e => console.error('Failed to save playerUuid', e));
+
+        const setupConn = (c: any) => {
+            props.connRef.current = c;
+            c.on('data', (data: any) => {
+                console.log('data:', data);
+
+                if (data?.type === 'connected' && data?.payload) {
+                    const {
+                        uuid,
+                        availableBreeds,
+                        selectedBreed,
+                        hasStarted,
+                        isPaused,
+                        hasPowerup,
+                        isAlive,
+                        hasEnded,
+                        isWinner
+                    } = data.payload;
+
+                    if (uuid) {
+                        props.setPlayerUuid(uuid);
+                        AsyncStorage.setItem('playerUuid', uuid).catch(e => console.error('Failed to save playerUuid', e));
+                    }
+
+                    if (availableBreeds) {
+                        props.setAvailableBreeds(availableBreeds);
+                    }
+
+                    props.dispatch({
+                        type: 'SYNC_STATE',
+                        payload: {
+                            hasStarted,
+                            isPaused,
+                            hasPowerup,
+                            isAlive,
+                            hasEnded,
+                            isWinner,
+                            selectedBreed: selectedBreed ? selectedBreed : availableBreeds[0],
+                        }
+                    });
                 }
 
                 if (props.onDataCallbackRef.current) {
                     props.onDataCallbackRef.current(data);
                 }
             });
-            
-            conn.send({
+
+            c.send({
                 type: 'connect',
-                payload: { 
+                payload: {
                     username,
                     uuid: props.playerUuid
                 },
             });
-            
+
             props.hasConnectedRef.current = true;
             onOpen?.();
-        });
+        };
+
+        if (conn.open) {
+            setupConn(conn);
+        } else {
+            conn.on('open', () => {
+                console.log('host connection opened');
+                setupConn(conn);
+            });
+        }
 
         conn.on('error', (error: any) => console.log('host connection error', error));
         conn.on('disconnected', () => console.log('host disconnected'));
         conn.on('close', () => console.log('host closed'));
-        
+
         return conn;
     }, [props]);
 
     const setOnDataReceived = useCallback((cb: (data: any) => void) => {
         props.onDataCallbackRef.current = cb;
-    }, [props.onDataCallbackRef]);
+        
+        // If we already have an open connection, ensure it's using the latest callback logic
+        // (Though the listener in connectToHost already uses the ref, so this is just for safety/clarity)
+        if (props.connRef.current && !props.connRef.current.listeners('data').length) {
+             props.connRef.current.on('data', (data: any) => {
+                 if (props.onDataCallbackRef.current) {
+                     props.onDataCallbackRef.current(data);
+                 }
+             });
+        }
+    }, [props]);
 
     return {
         peer: props.peerRef.current,

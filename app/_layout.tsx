@@ -3,12 +3,13 @@ import {Stack} from 'expo-router';
 import {StatusBar} from 'expo-status-bar';
 
 import {useColorScheme} from '@/hooks/use-color-scheme';
-import {createContext, useEffect, useRef, useState} from "react";
+import {createContext, useEffect, useReducer, useRef, useState} from "react";
 import Peer, {registerWebRTCGlobals} from "@/utils/peer-util";
 import {GestureHandlerRootView} from "react-native-gesture-handler";
 import {DataConnection} from "peerjs";
 import {useFonts} from "expo-font";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {gameReducer, initialGameState} from "@/constants/game-state";
 
 registerWebRTCGlobals();
 
@@ -22,8 +23,9 @@ export default function RootLayout() {
     const connRef = useRef<DataConnection>(null);
     const [hostId, setHostId] = useState<string>('');
     const [username, setUsername] = useState<string>('');
-    const [breed, setBreed] = useState<string>('');
     const [playerUuid, setPlayerUuid] = useState<string | null>(null);
+    const [availableBreeds, setAvailableBreeds] = useState<string[]>([]);
+    const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
     const hasConnectedRef = useRef<boolean>(false);
 
     useEffect(() => {
@@ -60,10 +62,12 @@ export default function RootLayout() {
                     setHostId,
                     username,
                     setUsername,
-                    breed,
-                    setBreed,
                     playerUuid,
                     setPlayerUuid,
+                    availableBreeds,
+                    setAvailableBreeds,
+                    gameState,
+                    dispatch,
                     hasConnectedRef,
                 }}>
                     <Stack>

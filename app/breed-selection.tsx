@@ -1,20 +1,27 @@
 import {Pressable, Text, View} from 'react-native';
 import "@/assets/css/global.css"
 import {Image} from 'expo-image';
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect} from "react";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
 import classNames from "classnames";
-import {CowBreed} from "@/app/cooow";
 import {usePeer} from "@/hooks/use-peer";
 import {BREED_DATA} from "@/constants/breeds";
+import {CowBreed} from "@/constants/game-state";
 
 export default function BreedSelectionScreen() {
     const { props, sendData, setOnDataReceived } = usePeer();
-    const [breed, setBreed] = useState<CowBreed>('highland');
-    const [availableBreeds, setAvailableBreeds] = useState<string[]>([
-        'holstein_friesian', 'hereford', 'angus', 'highland', 'belted_galloway', 'british_white', 'droughtmaster', 'jersey',
-    ]);
+    const { gameState, dispatch } = props;
+    const availableBreeds = props.availableBreeds || [];
+
+    const breed = gameState.selectedBreed;
+    const setBreed = useCallback((newBreed: CowBreed | ((curr: CowBreed | null) => CowBreed | null)) => {
+        if (typeof newBreed === 'function') {
+            dispatch({ type: 'SET_BREED', payload: newBreed(breed) });
+        } else {
+            dispatch({ type: 'SET_BREED', payload: newBreed });
+        }
+    }, [breed, dispatch]);
 
     const router = useRouter();
 
@@ -22,26 +29,30 @@ export default function BreedSelectionScreen() {
         setOnDataReceived((data: any) => {
             if (data?.type === 'player_joined') {
                 const newAvailableBreeds = data.payload as string[];
-                setAvailableBreeds(newAvailableBreeds);
-
-                // Reset breed if no longer available
-                setBreed((currentBreed) => {
-                    if (!newAvailableBreeds.includes(currentBreed)) {
-                        if (newAvailableBreeds.length > 0) {
-                            return newAvailableBreeds[0] as CowBreed;
-                        }
-                    }
-                    return currentBreed;
-                });
+                props.setAvailableBreeds(newAvailableBreeds);
             }
             if (data?.type === 'joined') {
                 if (data.payload?.breed) {
-                    props.setBreed(data.payload.breed);
+                    dispatch({ type: 'SET_BREED', payload: data.payload.breed });
                 }
                 router.navigate('/cooow');
             }
         });
-    }, [setOnDataReceived, router]);
+    }, [setOnDataReceived, router, props, dispatch]);
+
+    useEffect(() => {
+        const handleClose = () => {
+            // If connection lost here, maybe we want to know, but BreedSelection 
+            // doesn't have a reconnection overlay yet.
+        };
+
+        const currentConn = props.connRef.current;
+        currentConn?.on('close', handleClose);
+        
+        return () => {
+            currentConn?.off('close', handleClose);
+        }
+    }, [props.connRef]);
 
     const join = useCallback(() => {
         if (!breed) {
