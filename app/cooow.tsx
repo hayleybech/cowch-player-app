@@ -139,9 +139,16 @@ export default function CooowScreen() {
                     </View>
 
                     {!isLandscape && (
-                        <View className="flex items-center">
-                            <Text className="text-blue-600 text-xl font-pixel-chip text-shadow">Best played in landscape
-                                🔄</Text>
+                        <View className="flex items-center justify-center flex-row gap-4 p-2 border-2 border-blue-500">
+                            <View className="bg-white p-1 ">
+                                <Image
+                                    source={require('@/assets/images/landscape.png')}
+                                    className="aspect-[1/1] h-8 shrink"
+                                    style={{ width: 32, height: 32 }}
+                                />
+                            </View>
+                            <Text className="text-blue-500 text-xl font-pixel-chip text-shadow">Best played in landscape</Text>
+
                         </View>
                     )}
 
