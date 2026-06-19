@@ -175,7 +175,9 @@ export default function CooowScreen() {
                 <SwipeArea onSwipe={move} disabled={isPaused || (isDead && hasStarted) || isGameEnded} isDead={hasStarted && !isGameEnded && isDead}/>
             </View>
 
-            {isDead && hasStarted && !isGameEnded && <YouDiedOverlay/>}
+            {isDead && hasStarted && !isGameEnded &&
+                <YouDiedOverlay/>
+            }
 
             {isGameEnded &&
                 <GameEndedOverlay winner={winner} username={props.username} onPress={requestPauseOrStart}/>
