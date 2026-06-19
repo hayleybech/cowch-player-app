@@ -21,6 +21,8 @@ export default function LobbyScreen() {
             if (data?.type === 'connected') {
                 if (data.payload?.selectedBreed) {
                     router.navigate('/cooow');
+                } else {
+                    router.navigate('/breed-selection');
                 }
             }
             if (data?.type === 'player_joined') {

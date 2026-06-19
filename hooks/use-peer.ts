@@ -113,7 +113,7 @@ export function usePeer() {
                             isAlive,
                             hasEnded,
                             isWinner,
-                            selectedBreed: selectedBreed ? selectedBreed : (availableBreeds?.length > 0 ? availableBreeds[0] : null),
+                            selectedBreed: selectedBreed ? selectedBreed : null,
                         }
                     });
                 }

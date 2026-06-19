@@ -32,6 +32,7 @@ export default function BreedSelectionScreen() {
                 if (data.payload?.selectedBreed) {
                     router.navigate('/cooow');
                 }
+                // If no breed, stay here (breed selection)
             }
             if (data?.type === 'player_joined') {
                 const newAvailableBreeds = data.payload as string[];

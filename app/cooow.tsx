@@ -28,7 +28,13 @@ export default function CooowScreen() {
     const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
 
     useEffect(() => {
-        setOnDataReceived((data: unknown) => {
+        setOnDataReceived((data: any) => {
+            if (data?.type === 'connected') {
+                if (!data.payload?.selectedBreed) {
+                    router.navigate('/breed-selection');
+                }
+            }
+
             const action = data as GameNotification;
 
             console.log('action', action);
