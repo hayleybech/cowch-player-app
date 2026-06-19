@@ -33,12 +33,15 @@ export type GameAction =
     | { type: 'SET_BREED', payload: CowBreed | null }
     | { type: 'SYNC_STATE', payload: any }
     | { type: 'PEER_OPEN' }
+    | { type: 'RESET_STATE' }
     | { type: 'GAME_OVER', payload: { winner: string } };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
     switch (action.type) {
         case 'PEER_OPEN':
             return {...state};
+        case 'RESET_STATE':
+            return initialGameState;
         case 'PAUSE':
             return {...state, isPaused: true};
         case 'RESUME':

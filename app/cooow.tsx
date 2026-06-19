@@ -19,13 +19,18 @@ type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'star
 };
 
 export default function CooowScreen() {
-    const {props, sendData, connectToHost, setOnDataReceived} = usePeer();
+    const {props, sendData, connectToHost, setOnDataReceived, clearSession} = usePeer();
     const {gameState, dispatch} = props;
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
     const router = useRouter();
     const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
+
+    const handleClearSession = useCallback(() => {
+        clearSession();
+        router.replace('/');
+    }, [clearSession, router]);
 
     useEffect(() => {
         setOnDataReceived((data: any) => {
@@ -107,7 +112,7 @@ export default function CooowScreen() {
 
                     <View className="flex-row items-center gap-2 justify-between">
                         <View>
-                            <Pressable onPress={() => router.replace('/')}>
+                            <Pressable onPress={handleClearSession}>
                                 <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                             </Pressable>
                         </View>

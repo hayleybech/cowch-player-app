@@ -11,7 +11,7 @@ import {CowBreed} from "@/constants/game-state";
 import {ConnectingOverlay, ReconnectingOverlay} from "@/components/Overlays";
 
 export default function BreedSelectionScreen() {
-    const { props, sendData, setOnDataReceived } = usePeer();
+    const { props, sendData, setOnDataReceived, clearSession } = usePeer();
     const { gameState, dispatch } = props;
     const availableBreeds = props.availableBreeds || [];
 
@@ -25,6 +25,11 @@ export default function BreedSelectionScreen() {
     }, [breed, dispatch]);
 
     const router = useRouter();
+
+    const handleClearSession = useCallback(() => {
+        clearSession();
+        router.replace('/');
+    }, [clearSession, router]);
 
     useEffect(() => {
         setOnDataReceived((data: any) => {
@@ -64,7 +69,7 @@ export default function BreedSelectionScreen() {
             <View className="flex justify-center items-center h-full pt-3 px-4">
                 <View className="w-full h-full shrink flex justify-center">
                     <View className="flex-row justify-between items-center mb-1">
-                        <Pressable onPress={() => router.replace('/')}>
+                        <Pressable onPress={handleClearSession}>
                             <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                         </Pressable>
                         <Text className="text-xl text-white font-pixel-chip text-shadow">Hello, {props.username}!</Text>

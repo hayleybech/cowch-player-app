@@ -174,6 +174,28 @@ export function usePeer() {
         }
     }, [props]);
 
+    const clearSession = useCallback(async () => {
+        if (props.connRef.current) {
+            props.connRef.current.close();
+            props.connRef.current = null;
+        }
+        props.hasConnectedRef.current = false;
+        props.setHostId('');
+        props.setUsername('');
+        props.setPlayerUuid(null);
+        props.dispatch({ type: 'RESET_STATE' });
+
+        try {
+            await Promise.all([
+                AsyncStorage.removeItem('hostId'),
+                AsyncStorage.removeItem('username'),
+                AsyncStorage.removeItem('playerUuid'),
+            ]);
+        } catch (e) {
+            console.error('Failed to clear session from storage', e);
+        }
+    }, [props]);
+
     const isInitialLoadRef = useRef(true);
 
     useEffect(() => {
@@ -223,6 +245,7 @@ export function usePeer() {
         connectToHost,
         sendData,
         setOnDataReceived,
+        clearSession,
         // Expose refs if needed for specific cases
         props
     };
