@@ -3,6 +3,7 @@ import {View, Text, useWindowDimensions} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import classNames from "classnames";
+import {Image} from "expo-image";
 
 export type Direction = 'up' | 'down' | 'right' | 'left';
 
@@ -49,13 +50,26 @@ export const SwipeArea: React.FC<SwipeAreaProps> = ({onSwipe, disabled, isDead})
                         isDead && "bg-red-50 border-red-200")}>
                     {!isDead ? (
                         <>
-                            <MaterialCommunityIcons name="chevron-up" size={32} color="#d4d4d4" className="absolute top-4"/>
-                            <MaterialCommunityIcons name="chevron-down" size={32} color="#d4d4d4"
-                                                    className="absolute bottom-4"/>
-                            <MaterialCommunityIcons name="chevron-left" size={32} color="#d4d4d4"
-                                                    className="absolute left-4"/>
-                            <MaterialCommunityIcons name="chevron-right" size={32} color="#d4d4d4"
-                                                    className="absolute right-4"/>
+                            <Image
+                                source={require('@/assets/images/chevron.png')}
+                                className="aspect-[1/1] h-8 shrink absolute top-4"
+                                style={{ width: 32, height: 32 }}
+                            />
+                            <Image
+                                source={require('@/assets/images/chevron.png')}
+                                className="aspect-[1/1] h-8 shrink absolute right-4 rotate-90"
+                                style={{ width: 32, height: 32 }}
+                            />
+                            <Image
+                                source={require('@/assets/images/chevron.png')}
+                                className="aspect-[1/1] h-8 shrink absolute bottom-4 rotate-180"
+                                style={{ width: 32, height: 32 }}
+                            />
+                            <Image
+                                source={require('@/assets/images/chevron.png')}
+                                className="aspect-[1/1] h-8 shrink absolute left-4 -rotate-90"
+                                style={{ width: 32, height: 32 }}
+                            />
                             <Text className="text-neutral-400 font-pixel-chip text-shadow text-2xl">Swipe to Move</Text>
                         </>
                     ) : (
