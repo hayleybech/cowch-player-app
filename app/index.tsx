@@ -1,7 +1,7 @@
 import {Text, TextInput, useWindowDimensions, View} from 'react-native';
 import "@/assets/css/global.css"
 
-import {useCallback, useEffect, useRef} from "react";
+import {useCallback, useEffect} from "react";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
 import classNames from "classnames";
