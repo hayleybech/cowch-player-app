@@ -9,6 +9,7 @@ import {Direction, SwipeArea} from "@/components/SwipeArea";
 import {usePeer} from "@/hooks/use-peer";
 import {BREED_DATA} from "@/constants/breeds";
 import {useRouter} from "expo-router";
+import {ConnectingOverlay, GameEndedOverlay, ReconnectingOverlay, YouDiedOverlay} from "@/components/Overlays";
 
 type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'started' } | { type: 'powerup_stored' } | {
     type: 'powerup_used'
@@ -23,33 +24,8 @@ export default function CooowScreen() {
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
-    const [connStatus, setConnStatus] = useState<'initial' | 'open' | 'closed' | 'reconnecting'>('open');
     const router = useRouter();
     const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
-
-    const connect = useCallback(() => {
-        if (!props.hostId || !props.username) {
-            return;
-        }
-
-        const conn = connectToHost(props.hostId, props.username);
-        if (conn) {
-            conn.on('open', () => setConnStatus('open'));
-            conn.on('disconnected', () => setConnStatus('reconnecting'));
-            conn.on('close', () => setConnStatus('reconnecting'));
-        }
-
-    }, [connectToHost, props.hostId, props.username]);
-
-    useEffect(() => {
-        let timeout: any;
-        if (connStatus === 'reconnecting') {
-            timeout = setTimeout(() => {
-                connect();
-            }, 3000);
-        }
-        return () => clearTimeout(timeout);
-    }, [connStatus, connect]);
 
     useEffect(() => {
         setOnDataReceived((data: unknown) => {
@@ -80,21 +56,6 @@ export default function CooowScreen() {
             }
         });
     }, [dispatch, setOnDataReceived]);
-
-    useEffect(() => {
-        const handleClose = () => {
-            setConnStatus('reconnecting');
-        };
-
-        const currentConn = props.connRef.current;
-        currentConn?.on('close', handleClose);
-        currentConn?.on('disconnected', handleClose);
-
-        return () => {
-            currentConn?.off('close', handleClose);
-            currentConn?.off('disconnected', handleClose);
-        }
-    }, [props.connRef, connStatus]);
 
     const requestPauseOrStart = useCallback(() => {
         if (isGameEnded) {
@@ -199,39 +160,11 @@ export default function CooowScreen() {
             {isDead && hasStarted && !isGameEnded && <YouDiedOverlay/>}
 
             {isGameEnded &&
-                <GameEndedOverlay winner={winner} props={props} onPress={requestPauseOrStart}/>
+                <GameEndedOverlay winner={winner} username={props.username} onPress={requestPauseOrStart}/>
             }
 
-            {connStatus === 'reconnecting' && <ReconnectingOverlay/>}
+            {gameState.isConnecting && (props.hasConnectedRef.current ? <ReconnectingOverlay/> : <ConnectingOverlay/>)}
 
         </View>
     );
-}
-
-function ReconnectingOverlay() {
-    return <View className="absolute inset-0 bg-orange-500/90 z-[60] justify-center items-center p-6">
-        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">CONNECTION LOST</Text>
-        <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">Trying to reconnect...</Text>
-    </View>;
-}
-
-function GameEndedOverlay(props: { winner: string | undefined, props: Record<any, any>, onPress: () => void }) {
-    return <View className="absolute inset-0 bg-blue-600/90 z-50 justify-center items-center p-6">
-        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">GAME OVER</Text>
-        <Text className="text-white text-center font-pixel-chip text-shadow text-3xl mb-4">
-            {props.winner === props.props.username ? "YOU WON 🏆" : `WINNER: ${props.winner}`}
-        </Text>
-        <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">The game has ended. Ready for
-            another round?</Text>
-        <Button onPress={props.onPress} className="w-full max-w-xs">
-            Play Again
-        </Button>
-    </View>;
-}
-
-function YouDiedOverlay() {
-    return <View className="absolute inset-0 bg-red-500/80 z-50 justify-center items-center p-4">
-        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-4 text-center">YOU DIED</Text>
-        <Text className="text-white text-xl text-center font-pixel-chip text-shadow">Wait for the next round...</Text>
-    </View>;
 }

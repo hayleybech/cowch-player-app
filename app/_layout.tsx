@@ -29,17 +29,22 @@ export default function RootLayout() {
     const hasConnectedRef = useRef<boolean>(false);
 
     useEffect(() => {
-        const loadUuid = async () => {
+        const loadStoredData = async () => {
             try {
-                const storedUuid = await AsyncStorage.getItem('playerUuid');
-                if (storedUuid) {
-                    setPlayerUuid(storedUuid);
-                }
+                const [storedUuid, storedUsername, storedHostId] = await Promise.all([
+                    AsyncStorage.getItem('playerUuid'),
+                    AsyncStorage.getItem('username'),
+                    AsyncStorage.getItem('hostId')
+                ]);
+
+                if (storedUuid) setPlayerUuid(storedUuid);
+                if (storedUsername) setUsername(storedUsername);
+                if (storedHostId) setHostId(storedHostId);
             } catch (e) {
-                console.error('Failed to load player uuid from storage', e);
+                console.error('Failed to load data from storage', e);
             }
         };
-        loadUuid();
+        loadStoredData();
     }, []);
 
     useFonts({

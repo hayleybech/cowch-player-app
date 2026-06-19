@@ -1,13 +1,14 @@
 import {Pressable, Text, View} from 'react-native';
 import "@/assets/css/global.css"
 import {Image} from 'expo-image';
-import {useCallback, useEffect} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
 import classNames from "classnames";
 import {usePeer} from "@/hooks/use-peer";
 import {BREED_DATA} from "@/constants/breeds";
 import {CowBreed} from "@/constants/game-state";
+import {ConnectingOverlay, ReconnectingOverlay} from "@/components/Overlays";
 
 export default function BreedSelectionScreen() {
     const { props, sendData, setOnDataReceived } = usePeer();
@@ -27,6 +28,11 @@ export default function BreedSelectionScreen() {
 
     useEffect(() => {
         setOnDataReceived((data: any) => {
+            if (data?.type === 'connected') {
+                if (data.payload?.selectedBreed) {
+                    router.navigate('/cooow');
+                }
+            }
             if (data?.type === 'player_joined') {
                 const newAvailableBreeds = data.payload as string[];
                 props.setAvailableBreeds(newAvailableBreeds);
@@ -39,20 +45,6 @@ export default function BreedSelectionScreen() {
             }
         });
     }, [setOnDataReceived, router, props, dispatch]);
-
-    useEffect(() => {
-        const handleClose = () => {
-            // If connection lost here, maybe we want to know, but BreedSelection 
-            // doesn't have a reconnection overlay yet.
-        };
-
-        const currentConn = props.connRef.current;
-        currentConn?.on('close', handleClose);
-        
-        return () => {
-            currentConn?.off('close', handleClose);
-        }
-    }, [props.connRef]);
 
     const join = useCallback(() => {
         if (!breed) {
@@ -67,6 +59,7 @@ export default function BreedSelectionScreen() {
 
     return (
         <View className="bg-neutral-800 flex-1">
+            {gameState.isConnecting && (props.hasConnectedRef.current ? <ReconnectingOverlay/> : <ConnectingOverlay/>)}
             <View className="flex justify-center items-center h-full pt-3 px-4">
                 <View className="w-full h-full shrink flex justify-center">
                     <View className="flex-row justify-between items-center mb-1">

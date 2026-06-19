@@ -1,11 +1,12 @@
 import {Text, TextInput, useWindowDimensions, View} from 'react-native';
 import "@/assets/css/global.css"
 
-import {useCallback, useEffect} from "react";
+import {useCallback, useEffect, useRef} from "react";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
 import classNames from "classnames";
 import {usePeer} from "@/hooks/use-peer";
+import {ConnectingOverlay, ReconnectingOverlay} from "@/components/Overlays";
 
 export default function LobbyScreen() {
     const { props, connectToHost, setOnDataReceived } = usePeer();
@@ -17,6 +18,11 @@ export default function LobbyScreen() {
 
     useEffect(() => {
         setOnDataReceived((data: any) => {
+            if (data?.type === 'connected') {
+                if (data.payload?.selectedBreed) {
+                    router.navigate('/cooow');
+                }
+            }
             if (data?.type === 'player_joined') {
                 router.navigate('/breed-selection');
             }
@@ -31,8 +37,18 @@ export default function LobbyScreen() {
         connectToHost(props.hostId, props.username);
     }, [props.hostId, props.username, connectToHost]);
 
+    // If the user starts typing, we should disable the initial load auto-connect if it hasn't fired yet
+    const handleHostIdChange = useCallback((value: string) => {
+        props.setHostId(value.toUpperCase());
+    }, [props.setHostId]);
+
+    const handleUsernameChange = useCallback((value: string) => {
+        props.setUsername(value);
+    }, [props.setUsername]);
+
     return (
         <View className="bg-neutral-800 flex-1">
+            {props.gameState.isConnecting && (props.hasConnectedRef.current ? <ReconnectingOverlay/> : <ConnectingOverlay/>)}
             <View className="flex">
                 <View className="flex justify-center items-center h-full">
                     <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
@@ -49,7 +65,7 @@ export default function LobbyScreen() {
 
                         <Text className="text-xl text-white font-pixel-chip text-shadow">Lobby Code</Text>
                         <TextInput
-                            onChangeText={(value) => props.setHostId(value.toUpperCase())}
+                            onChangeText={handleHostIdChange}
                             value={props.hostId}
                             autoCapitalize="characters"
                             maxLength={4}
@@ -58,7 +74,7 @@ export default function LobbyScreen() {
 
                         <Text className="text-xl text-shadow font-pixel-chip text-white">Username</Text>
                         <TextInput
-                            onChangeText={(value) => props.setUsername(value)}
+                            onChangeText={handleUsernameChange}
                             maxLength={8}
                             value={props.username}
                             className="mb-4 text-xl text-shadow font-pixel-chip border border-neutral-400 text-white py-0.5 px-2 focus:border-white [outline:none!important]"
