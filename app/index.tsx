@@ -1,17 +1,15 @@
 import {Text, TextInput, useWindowDimensions, View} from 'react-native';
 import "@/assets/css/global.css"
 
-import {useCallback, useContext, useEffect, useState} from "react";
-import Peer, {makePeerHeartbeater} from "@/utils/peer-util";
+import {useCallback, useEffect} from "react";
 import {Button} from "@/components/ui/Button";
 import {useRouter} from "expo-router";
-import {ScreenPropsContext} from "@/app/_layout";
 import classNames from "classnames";
+import {usePeer} from "@/hooks/use-peer";
+import {ConnectingOverlay, ReconnectingOverlay} from "@/components/Overlays";
 
 export default function LobbyScreen() {
-    const props = useContext(ScreenPropsContext);
-    const [hostId, setHostId] = useState<string>(props.hostIdRef?.current || '');
-    const [username, setUsername] = useState<string>(props.usernameRef?.current || '');
+    const { props, connectToHost, setOnDataReceived } = usePeer();
 
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
@@ -19,76 +17,40 @@ export default function LobbyScreen() {
     const router = useRouter();
 
     useEffect(() => {
-        if (!props.peerRef) {
-            return;
-        }
-
-        const peer = new Peer();
-        props.peerRef.current = peer;
-
-        peer.on('open', (id: string) => {
-            console.log('broker ready');
-
-            props.heartbeatRef.current = makePeerHeartbeater(peer);
-        });
-        peer.on('disconnected', (id: string) => console.log('broker disconnected: ', id));
-        peer.on('closed', () => console.log('broker closed'));
-        peer.on('error', (error: string) => console.error('broker error', error));
-
-        return () => {
-            peer.destroy();
-
-            props.heartbeatRef.current.stop();
-        };
-    }, [props.heartbeatRef, props.peerRef]);
-
-    useEffect(() => {
-        props.onDataCallbackRef.current = (data: any) => {
+        setOnDataReceived((data: any) => {
+            if (data?.type === 'connected') {
+                if (data.payload?.selectedBreed) {
+                    router.navigate('/cooow');
+                } else {
+                    router.navigate('/breed-selection');
+                }
+            }
             if (data?.type === 'player_joined') {
                 router.navigate('/breed-selection');
             }
-        };
-    }, [props.onDataCallbackRef, router]);
+        });
+    }, [setOnDataReceived, router]);
 
     const connect = useCallback(() => {
-        if (!props.peerRef?.current || !hostId || !username) {
+        if (!props.hostId || !props.username) {
             return;
         }
 
-        props.hostIdRef.current = hostId;
-        props.usernameRef.current = username;
+        connectToHost(props.hostId, props.username);
+    }, [props.hostId, props.username, connectToHost]);
 
-        const conn = props.peerRef.current.connect(`COWCH-${hostId}`);
+    // If the user starts typing, we should disable the initial load auto-connect if it hasn't fired yet
+    const handleHostIdChange = useCallback((value: string) => {
+        props.setHostId(value.toUpperCase());
+    }, [props.setHostId]);
 
-        conn.on('open', function () {
-            console.log('host connection opened');
-
-            props.connRef.current = conn;
-            conn.on('data', props.onDataRef.current);
-
-            conn.send({
-                type: 'connect',
-                payload: {username},
-            })
-
-            props.hasConnectedRef.current = true;
-        });
-
-
-        conn.on('error', (error: string) => {
-            console.log('host connection error', error);
-        });
-        conn.on('disconnected', () => {
-            console.log('host disconnected');
-        });
-        conn.on('close', () => {
-            console.log('host closed');
-        });
-
-    }, [hostId, props.connRef, props.hasConnectedRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef, username]);
+    const handleUsernameChange = useCallback((value: string) => {
+        props.setUsername(value);
+    }, [props.setUsername]);
 
     return (
         <View className="bg-neutral-800 flex-1">
+            {props.gameState.isConnecting && (props.hasConnectedRef.current ? <ReconnectingOverlay/> : <ConnectingOverlay/>)}
             <View className="flex">
                 <View className="flex justify-center items-center h-full">
                     <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
@@ -105,12 +67,8 @@ export default function LobbyScreen() {
 
                         <Text className="text-xl text-white font-pixel-chip text-shadow">Lobby Code</Text>
                         <TextInput
-                            onChangeText={(value) => {
-                                const upperValue = value.toUpperCase();
-                                setHostId(upperValue);
-                                props.hostIdRef.current = upperValue;
-                            }}
-                            value={hostId}
+                            onChangeText={handleHostIdChange}
+                            value={props.hostId}
                             autoCapitalize="characters"
                             maxLength={4}
                             className="mb-4 text-xl text-white text-shadow font-pixel-chip border border-neutral-400 py-0.5 px-2 focus:border-white [outline:none!important]"
@@ -118,17 +76,14 @@ export default function LobbyScreen() {
 
                         <Text className="text-xl text-shadow font-pixel-chip text-white">Username</Text>
                         <TextInput
-                            onChangeText={(value) => {
-                                setUsername(value);
-                                props.usernameRef.current = value;
-                            }}
+                            onChangeText={handleUsernameChange}
                             maxLength={8}
-                            defaultValue={username}
+                            value={props.username}
                             className="mb-4 text-xl text-shadow font-pixel-chip border border-neutral-400 text-white py-0.5 px-2 focus:border-white [outline:none!important]"
                         />
 
                         <View className="mb-3">
-                            <Button onPress={connect} disabled={!hostId || !username}>
+                            <Button onPress={connect} disabled={!props.hostId || !props.username}>
                                 <Text className="text-2xl text-shadow font-pixel-chip">
                                     Connect
                                 </Text>

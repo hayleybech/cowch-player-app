@@ -1,151 +1,45 @@
 import {Pressable, Text, View, useWindowDimensions} from 'react-native';
 import "@/assets/css/global.css"
+import {Image} from 'expo-image';
 
-import {useCallback, useContext, useEffect, useReducer, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {Button} from "@/components/ui/Button";
-import {ScreenPropsContext} from "@/app/_layout";
 import * as Haptics from 'expo-haptics';
 import {Direction, SwipeArea} from "@/components/SwipeArea";
-
+import {usePeer} from "@/hooks/use-peer";
+import {BREED_DATA} from "@/constants/breeds";
 import {useRouter} from "expo-router";
+import {ConnectingOverlay, GameEndedOverlay, ReconnectingOverlay, YouDiedOverlay} from "@/components/Overlays";
 
-export type CowBreed = 'holstein-friesian' | 'angus' | 'hereford' | 'highland';
-type ConnectionStatus = 'initial' | 'open' | 'closed' | 'reconnecting';
-type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'started' } | {
-    type: 'changed_direction',
-    payload: Direction
-} | { type: 'powerup_stored' } | { type: 'powerup_used' } | { type: 'died' } | {
+type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'started' } | { type: 'powerup_stored' } | {
+    type: 'powerup_used'
+} | { type: 'died' } | {
     type: 'game_over',
     payload: { winner: string }
 };
 
-interface GameState {
-    isPaused: boolean;
-    hasStarted: boolean;
-    currentDirection: Direction | undefined;
-    hasPowerup: boolean;
-    isDead: boolean;
-    isGameEnded: boolean;
-    winner: string | undefined;
-}
-
-const initialGameState: GameState = {
-    isPaused: true,
-    hasStarted: false,
-    currentDirection: undefined,
-    hasPowerup: false,
-    isDead: false,
-    isGameEnded: false,
-    winner: undefined,
-};
-
-type GameAction =
-    | { type: 'PAUSE' }
-    | { type: 'RESUME' }
-    | { type: 'START_GAME' }
-    | { type: 'CHANGE_DIRECTION', payload: Direction }
-    | { type: 'POWERUP_STORED' }
-    | { type: 'POWERUP_USED' }
-    | { type: 'DIED' }
-    | { type: 'GAME_OVER', payload: { winner: string } };
-
-function gameReducer(state: GameState, action: GameAction): GameState {
-    switch (action.type) {
-        case 'PAUSE':
-            return {...state, isPaused: true};
-        case 'RESUME':
-            return {...state, isPaused: false};
-        case 'START_GAME':
-            return {
-                ...state,
-                hasStarted: true,
-                isPaused: false,
-                isGameEnded: false,
-                isDead: false,
-                winner: undefined,
-            };
-        case 'CHANGE_DIRECTION':
-            return {...state, currentDirection: action.payload};
-        case 'POWERUP_STORED':
-            return {...state, hasPowerup: true};
-        case 'POWERUP_USED':
-            return {...state, hasPowerup: false};
-        case 'DIED':
-            return {...state, isDead: true};
-        case 'GAME_OVER':
-            return {
-                ...state,
-                isGameEnded: true,
-                winner: action.payload.winner,
-            };
-        default:
-            return state;
-    }
-}
-
 export default function CooowScreen() {
-    const props = useContext(ScreenPropsContext);
+    const {props, sendData, connectToHost, setOnDataReceived, clearSession} = usePeer();
+    const {gameState, dispatch} = props;
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
-    const [connStatus, setConnStatus] = useState<ConnectionStatus>('open');
     const router = useRouter();
-    const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
     const {isPaused, hasStarted, hasPowerup, isDead, isGameEnded, winner} = gameState;
 
-    const connect = useCallback(() => {
-        if (!props.peerRef?.current || !props.hostIdRef.current || !props.usernameRef.current) {
-            return;
-        }
-
-        const conn = props.peerRef.current.connect(`COWCH-${props.hostIdRef.current}`);
-
-        conn.on('open', function () {
-            console.log('host connection opened (reconnected)');
-
-            props.connRef.current = conn;
-            conn.on('data', props.onDataRef.current);
-
-            conn.send({
-                type: 'connect',
-                payload: {username: props.usernameRef.current},
-            })
-
-            setConnStatus('open');
-        });
-
-        conn.on('error', (error: string) => {
-            console.log('host connection error', error);
-        });
-
-        conn.on('disconnected', () => {
-            console.log('host disconnected');
-            setConnStatus('reconnecting');
-        });
-
-        conn.on('close', () => {
-            console.log('host closed');
-            setConnStatus('reconnecting');
-        });
-
-    }, [props.connRef, props.hostIdRef, props.onDataRef, props.peerRef, props.usernameRef]);
+    const handleClearSession = useCallback(() => {
+        clearSession();
+        router.replace('/');
+    }, [clearSession, router]);
 
     useEffect(() => {
-        let timeout: any;
-        if (connStatus === 'reconnecting') {
-            timeout = setTimeout(() => {
-                connect();
-            }, 3000);
-        }
-        return () => clearTimeout(timeout);
-    }, [connStatus, connect]);
+        setOnDataReceived((data: any) => {
+            if (data?.type === 'connected') {
+                if (!data.payload?.selectedBreed) {
+                    router.navigate('/breed-selection');
+                }
+            }
 
-    useEffect(() => {
-        if (!props.connRef.current) {
-            return;
-        }
-
-        props.onDataCallbackRef.current = (data: unknown) => {
             const action = data as GameNotification;
 
             console.log('action', action);
@@ -159,9 +53,6 @@ export default function CooowScreen() {
             if (action.type === 'started') {
                 dispatch({type: 'START_GAME'});
             }
-            if (action.type === 'changed_direction') {
-                dispatch({type: 'CHANGE_DIRECTION', payload: action.payload});
-            }
             if (action.type === 'powerup_stored') {
                 dispatch({type: 'POWERUP_STORED'});
             }
@@ -174,75 +65,45 @@ export default function CooowScreen() {
             if (action.type === 'game_over') {
                 dispatch({type: 'GAME_OVER', payload: action.payload});
             }
-        };
-
-        const handleClose = () => {
-            setConnStatus('reconnecting');
-        };
-
-        props.connRef.current.on('close', handleClose);
-        props.connRef.current.on('disconnected', handleClose);
-
-        return () => {
-            if (props.connRef.current) {
-                props.connRef.current.off('close', handleClose);
-                props.connRef.current.off('disconnected', handleClose);
-            }
-        }
-    }, [props.connRef, props.onDataCallbackRef]);
+        });
+    }, [dispatch, setOnDataReceived]);
 
     const requestPauseOrStart = useCallback(() => {
-        if (!props.connRef.current) {
-            return;
-        }
-
         if (isGameEnded) {
-            props.connRef.current.send({
+            sendData({
                 type: 'start_game',
             })
             return;
         }
 
-        props.connRef.current.send({
+        sendData({
             type: hasStarted ? 'pause' : 'start_game',
         })
-    }, [hasStarted, props.connRef, isGameEnded])
+    }, [hasStarted, isGameEnded, sendData])
 
     const drop = useCallback(() => {
-        if (!props.connRef.current) {
-            return;
-        }
-
-        props.connRef.current.send({
+        sendData({
             type: 'drop_powerup',
         });
         dispatch({type: 'POWERUP_USED'});
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }, [props.connRef]);
+    }, [dispatch, sendData]);
 
     const usePowerup = useCallback(() => {
-        if (!props.connRef.current) {
-            return;
-        }
-
-        props.connRef.current.send({
+        sendData({
             type: 'use_powerup',
         });
         dispatch({type: 'POWERUP_USED'});
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }, [props.connRef]);
+    }, [dispatch, sendData]);
 
     const move = useCallback((direction: Direction) => {
-        if (!props.connRef.current) {
-            return;
-        }
-
-        props.connRef.current.send({
+        sendData({
             type: 'move',
             payload: direction,
         });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, [props.connRef]);
+    }, [sendData]);
 
     return (
         <View className="bg-neutral-800 flex-1 relative">
@@ -251,15 +112,29 @@ export default function CooowScreen() {
 
                     <View className="flex-row items-center gap-2 justify-between">
                         <View>
-                            <Pressable onPress={() => router.replace('/')}>
+                            <Pressable onPress={handleClearSession}>
                                 <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                             </Pressable>
-                            <Text
-                                className="font-pixel-chip text-shadow text-white text-lg">{props.usernameRef.current}</Text>
+                        </View>
+                        <View className="flex-row items-center justify-start gap-1">
+                            {gameState.selectedBreed && (
+                                <View>
+                                    <Image
+                                        source={BREED_DATA.find(b => b.id === gameState.selectedBreed)?.img}
+                                        className="aspect-[2/1] h-8 shrink"
+                                        style={{ width: 64, height: 32 }}
+                                    />
+                                </View>
+                            )}
+                            <View>
+                                <Text className="font-pixel-chip text-shadow text-white text-lg">
+                                    {props.username}
+                                </Text>
+                            </View>
                         </View>
                         <Button onPress={requestPauseOrStart}
-                                disabled={!props.connRef.current || (isDead && !isGameEnded)}>
-                            {isGameEnded ? 'Play Again' : (!hasStarted ? 'Start Game' : (isPaused ? 'Resume' : 'Pause'))}
+                                disabled={!props.connRef.current || (hasStarted && !isGameEnded && isDead)}>
+                            {isGameEnded ? 'Restart' : (!hasStarted ? 'Start' : (isPaused ? 'Resume' : 'Pause'))}
                         </Button>
                     </View>
 
@@ -290,44 +165,17 @@ export default function CooowScreen() {
                     </View>
                 </View>
 
-                <SwipeArea onSwipe={move} disabled={isPaused || isDead || isGameEnded} isDead={isDead || isGameEnded}/>
+                <SwipeArea onSwipe={move} disabled={isPaused || (isDead && hasStarted) || isGameEnded} isDead={hasStarted && !isGameEnded && isDead}/>
             </View>
 
-            {isDead && !isGameEnded && <YouDiedOverlay/>}
+            {isDead && hasStarted && !isGameEnded && <YouDiedOverlay/>}
 
             {isGameEnded &&
-                <GameEndedOverlay winner={winner} props={props} onPress={requestPauseOrStart}/>
+                <GameEndedOverlay winner={winner} username={props.username} onPress={requestPauseOrStart}/>
             }
 
-            {connStatus === 'reconnecting' && <ReconnectingOverlay/>}
+            {gameState.isConnecting && (props.hasConnectedRef.current ? <ReconnectingOverlay/> : <ConnectingOverlay/>)}
 
         </View>
     );
-}
-
-function ReconnectingOverlay() {
-    return <View className="absolute inset-0 bg-orange-500/90 z-[60] justify-center items-center p-6">
-        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">CONNECTION LOST</Text>
-        <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">Trying to reconnect...</Text>
-    </View>;
-}
-
-function GameEndedOverlay(props: { winner: string | undefined, props: Record<any, any>, onPress: () => void }) {
-    return <View className="absolute inset-0 bg-blue-600/90 z-50 justify-center items-center p-6">
-        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">GAME OVER</Text>
-        <Text className="text-white text-center font-pixel-chip text-shadow text-3xl mb-4">
-            {props.winner === props.props.usernameRef.current ? "YOU WON 🏆" : `WINNER: ${props.winner}`}
-        </Text>
-        <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">The game has ended. Ready for another round?</Text>
-        <Button onPress={props.onPress} className="w-full max-w-xs">
-            Play Again
-        </Button>
-    </View>;
-}
-
-function YouDiedOverlay() {
-    return <View className="absolute inset-0 bg-red-500/80 z-50 justify-center items-center p-4">
-        <Text className="text-white font-pixel-chip text-shadow text-6xl mb-4 text-center">YOU DIED</Text>
-        <Text className="text-white text-xl text-center font-pixel-chip text-shadow">Wait for the next round...</Text>
-    </View>;
 }
