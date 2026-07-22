@@ -55,7 +55,7 @@ export default function LobbyScreen() {
             <View className="flex">
                 <View className="flex justify-center items-center h-full">
                     <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
-                        <View className="mb-4">
+                        <View className="mb-4 pr-12">
                             <Text className="text-white text-7xl italic font-pixel-chip text-shadow">cowch</Text>
                         </View>
 

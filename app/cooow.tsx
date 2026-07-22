@@ -109,8 +109,7 @@ export default function CooowScreen() {
         <View className="bg-neutral-800 flex-1 relative">
             <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-stretch gap-4' : 'flex-col'}`}>
                 <View className={`gap-8 p-4 grow ${isLandscape ? 'flex-1' : ''}`}>
-
-                    <View className="flex-row items-center gap-2 justify-between">
+                    <View className="flex-row items-center gap-2 justify-between pr-12">
                         <View>
                             <Pressable onPress={handleClearSession}>
                                 <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>

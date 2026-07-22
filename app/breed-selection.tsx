@@ -70,7 +70,7 @@ export default function BreedSelectionScreen() {
                 <ConnectingOverlay onCancel={handleClearSession}/>)}
             <View className="flex justify-center items-center h-full pt-3 px-4">
                 <View className="w-full h-full shrink flex justify-center">
-                    <View className="flex-row justify-between items-center mb-1">
+                    <View className="flex-row justify-between items-center mb-1 pr-12">
                         <Pressable onPress={handleClearSession}>
                             <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>
                         </Pressable>

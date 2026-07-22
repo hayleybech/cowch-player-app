@@ -10,6 +10,7 @@ import {DataConnection} from "peerjs";
 import {useFonts} from "expo-font";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {gameReducer, initialGameState} from "@/constants/game-state";
+import {FullScreenToggle} from "@/components/FullScreenToggle";
 
 registerWebRTCGlobals();
 
@@ -80,6 +81,7 @@ export default function RootLayout() {
                         <Stack.Screen name="breed-selection" options={{title: 'Breed Selection', headerShown: false}}/>
                         <Stack.Screen name="cooow" options={{title: 'Cooow', headerShown: false,}}/>
                     </Stack>
+                    <FullScreenToggle/>
                     <StatusBar style="auto"/>
                 </ScreenPropsContext.Provider>
             </ThemeProvider>
