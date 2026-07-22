@@ -76,7 +76,7 @@ export default function BreedSelectionScreen() {
                         </Pressable>
                         <Text className="text-xl text-white font-pixel-chip text-shadow">Hello, {props.username}!</Text>
                     </View>
-                    <View className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-1 p-1 w-full">
+                    <View className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-1 p-1 w-full bg-neutral-600">
                         {BREED_DATA.map(({id, img, name}) => (
                             <Pressable
                                 key={id}
@@ -84,7 +84,7 @@ export default function BreedSelectionScreen() {
                                 onPress={() => setBreed(id as CowBreed)}
                                 className={classNames(
                                     'flex flex-col gap-2 border-2 p-1',
-                                    id === breed ? 'border-neutral-300 bg-neutral-700' : 'border-transparent',
+                                    id === breed ? 'border-neutral-300 bg-neutral-400' : 'border-transparent',
                                     !availableBreeds.includes(id) && 'opacity-20'
                                 )}>
                                 <Image source={img} className="aspect-[2/1] w-full shrink"/>
