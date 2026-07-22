@@ -55,12 +55,12 @@ export default function LobbyScreen() {
             <View className="flex">
                 <View className="flex justify-center items-center h-full">
                     <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>
-                        <View className="mb-4 pr-12">
-                            <Text className="text-white text-7xl italic font-pixel-chip text-shadow">cowch</Text>
+                        <View className="mb-2 pr-12">
+                            <Text className="text-white text-6xl italic font-pixel-chip text-shadow">cowch</Text>
                         </View>
 
-                        <View className="mb-4">
-                            <Text className="text-lg text-white font-pixel-chip text-shadow-lg">
+                        <View className="mb-2">
+                            <Text className="text-lg text-white font-pixel-chip text-shadow-lg leading-1">
                                 <Text className="text-gray-300">Open a lobby at </Text>
                                 <Text className="text-2xl">cowch.laravel.cloud</Text>
                             </Text>
@@ -83,7 +83,7 @@ export default function LobbyScreen() {
                             className="mb-4 text-xl text-shadow font-pixel-chip border border-neutral-400 text-white py-0.5 px-2 focus:border-white [outline:none!important]"
                         />
 
-                        <View className="mb-3">
+                        <View className="mb-2">
                             <Button onPress={connect} disabled={!props.hostId || !props.username}>
                                 <Text className="text-2xl text-shadow font-pixel-chip">
                                     Connect
@@ -92,11 +92,11 @@ export default function LobbyScreen() {
 
                         </View>
 
+                            <View className="left-0 right-0 flex items-center">
+                                <Text className="text-neutral-200 text-lg text-shadow font-pixel-chip">www.hayleybech.me</Text>
+                            </View>
                     </View>
 
-                    <View className="left-0 right-0 flex items-center">
-                        <Text className="text-neutral-200 text-lg text-shadow font-pixel-chip">www.hayleybech.me</Text>
-                    </View>
 
                 </View>
             </View>

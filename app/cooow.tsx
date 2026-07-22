@@ -19,7 +19,7 @@ type GameNotification = { type: 'paused' } | { type: 'resumed' } | { type: 'star
 };
 
 export default function CooowScreen() {
-    const {props, sendData, connectToHost, setOnDataReceived, clearSession} = usePeer();
+    const {props, sendData, setOnDataReceived, clearSession} = usePeer();
     const {gameState, dispatch} = props;
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
@@ -107,9 +107,9 @@ export default function CooowScreen() {
 
     return (
         <View className="bg-neutral-800 flex-1 relative">
-            <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-stretch gap-4' : 'flex-col'}`}>
-                <View className={`gap-8 p-4 grow ${isLandscape ? 'flex-1' : ''}`}>
-                    <View className="flex-row items-center gap-2 justify-between pr-12">
+            <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-stretch gap-2' : 'flex-col'}`}>
+                <View className={`gap-2 p-2 grow ${isLandscape ? 'flex-1' : ''}`}>
+                    <View className="flex-row items-center gap-2 justify-between">
                         <View>
                             <Pressable onPress={handleClearSession}>
                                 <Text className="text-white text-4xl italic font-pixel-chip text-shadow">cowch</Text>

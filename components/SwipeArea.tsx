@@ -42,7 +42,7 @@ export const SwipeArea: React.FC<SwipeAreaProps> = ({onSwipe, disabled, isDead})
     return (
         <GestureDetector gesture={swipeGesture}>
             <View
-                className={classNames('p-4',
+                className={classNames('p-2',
                     isLandscape ? 'h-full w-1/2' : 'w-full h-1/2',
                 )}>
                 <View

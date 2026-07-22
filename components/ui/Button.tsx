@@ -11,7 +11,7 @@ export const Button = (props: PropsWithChildren<{
 }>) => (
     <Pressable onPress={props.onPress} disabled={props.disabled}
                className={classNames(
-                   'px-4 py-2 flex items-center justify-center cursor-pointer ',
+                   'px-4 py-1 flex items-center justify-center cursor-pointer ',
                    props.disabled ? 'bg-neutral-500 opacity-50 cursor-not-allowed' : 'bg-lime-500 hover:bg-lime-400 active:bg-lime-300',
                    props.className ?? ''
                )}>
