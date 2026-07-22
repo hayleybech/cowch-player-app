@@ -16,6 +16,7 @@ export const Button = (props: PropsWithChildren<{
                    props.className ?? ''
                )}>
 
-        <Text className={`text-white text-center ${props.textSize ?? 'text-lg'} font-pixel-chip text-shadow`}>{props.children}</Text>
+        <Text
+            className={`text-white text-center ${props.textSize ?? 'text-lg'} font-pixel-chip text-shadow`}>{props.children}</Text>
     </Pressable>
 )

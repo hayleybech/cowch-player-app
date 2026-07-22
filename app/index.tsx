@@ -9,7 +9,7 @@ import {usePeer} from "@/hooks/use-peer";
 import {ConnectingOverlay, ReconnectingOverlay} from "@/components/Overlays";
 
 export default function LobbyScreen() {
-    const { props, connectToHost, setOnDataReceived } = usePeer();
+    const {props, connectToHost, setOnDataReceived, clearSession} = usePeer();
 
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
@@ -50,7 +50,8 @@ export default function LobbyScreen() {
 
     return (
         <View className="bg-neutral-800 flex-1">
-            {props.gameState.isConnecting && (props.hasConnectedRef.current ? <ReconnectingOverlay/> : <ConnectingOverlay/>)}
+            {props.gameState.isConnecting && (props.hasConnectedRef.current ?
+                <ReconnectingOverlay onCancel={clearSession}/> : <ConnectingOverlay onCancel={clearSession}/>)}
             <View className="flex">
                 <View className="flex justify-center items-center h-full">
                     <View className={classNames('flex-col p-4', isLandscape ? 'w-1/2' : 'w-full')}>

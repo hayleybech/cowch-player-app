@@ -122,7 +122,7 @@ export default function CooowScreen() {
                                     <Image
                                         source={BREED_DATA.find(b => b.id === gameState.selectedBreed)?.img}
                                         className="aspect-[2/1] h-8 shrink"
-                                        style={{ width: 64, height: 32 }}
+                                        style={{width: 64, height: 32}}
                                     />
                                 </View>
                             )}
@@ -144,10 +144,11 @@ export default function CooowScreen() {
                                 <Image
                                     source={require('@/assets/images/landscape.png')}
                                     className="aspect-[1/1] h-8 shrink"
-                                    style={{ width: 32, height: 32 }}
+                                    style={{width: 32, height: 32}}
                                 />
                             </View>
-                            <Text className="text-blue-500 text-xl font-pixel-chip text-shadow">Best played in landscape</Text>
+                            <Text className="text-blue-500 text-xl font-pixel-chip text-shadow">Best played in
+                                landscape</Text>
 
                         </View>
                     )}
@@ -172,7 +173,8 @@ export default function CooowScreen() {
                     </View>
                 </View>
 
-                <SwipeArea onSwipe={move} disabled={isPaused || (isDead && hasStarted) || isGameEnded} isDead={hasStarted && !isGameEnded && isDead}/>
+                <SwipeArea onSwipe={move} disabled={isPaused || (isDead && hasStarted) || isGameEnded}
+                           isDead={hasStarted && !isGameEnded && isDead}/>
             </View>
 
             {isDead && hasStarted && !isGameEnded &&
@@ -183,7 +185,9 @@ export default function CooowScreen() {
                 <GameEndedOverlay winner={winner} username={props.username} onPress={requestPauseOrStart}/>
             }
 
-            {gameState.isConnecting && (props.hasConnectedRef.current ? <ReconnectingOverlay/> : <ConnectingOverlay/>)}
+            {gameState.isConnecting && (props.hasConnectedRef.current ?
+                <ReconnectingOverlay onCancel={handleClearSession}/> :
+                <ConnectingOverlay onCancel={handleClearSession}/>)}
 
         </View>
     );
