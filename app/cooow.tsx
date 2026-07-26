@@ -105,6 +105,13 @@ export default function CooowScreen() {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }, [sendData]);
 
+    const leaveGame = useCallback(() => {
+        sendData({
+            type: 'leave',
+        });
+        handleClearSession();
+    }, [handleClearSession, sendData]);
+
     return (
         <View className="bg-neutral-800 flex-1 relative">
             <View className={`flex-1 justify-between ${isLandscape ? 'flex-row items-stretch gap-2' : 'flex-col'}`}>
@@ -131,10 +138,17 @@ export default function CooowScreen() {
                                 </Text>
                             </View>
                         </View>
-                        <Button onPress={requestPauseOrStart}
-                                disabled={!props.connRef.current || (hasStarted && !isGameEnded && isDead)}>
-                            {isGameEnded ? 'Restart' : (!hasStarted ? 'Start' : (isPaused ? 'Resume' : 'Pause'))}
-                        </Button>
+                        <View className="flex-row items-center gap-2">
+                            {isPaused && (
+                                <Button onPress={leaveGame} className="bg-red-500 active:bg-red-300">
+                                    Leave
+                                </Button>
+                            )}
+                            <Button onPress={requestPauseOrStart}
+                                    disabled={!props.connRef.current || (hasStarted && !isGameEnded && isDead)}>
+                                {isGameEnded ? 'Restart' : (!hasStarted ? 'Start' : (isPaused ? 'Resume' : 'Pause'))}
+                            </Button>
+                        </View>
                     </View>
 
                     {!isLandscape && (

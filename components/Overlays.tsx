@@ -1,13 +1,14 @@
-import { ActivityIndicator, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Button } from "@/components/ui/Button";
 import {Image} from "expo-image";
+import {Spinner} from "@/components/ui/Spinner";
 
 export function ReconnectingOverlay(props: { onCancel: () => void }) {
     return (
         <View className="absolute inset-0 bg-orange-500/90 z-[60] justify-center items-center p-6">
             <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">RECONNECTING</Text>
             <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">Trying to reconnect...</Text>
-            <ActivityIndicator size="large" color="#ffffff" className="mb-8" />
+            <Spinner className="mb-8" />
             <Button onPress={props.onCancel}>
                 Cancel
             </Button>
@@ -20,7 +21,7 @@ export function ConnectingOverlay(props: { onCancel: () => void }) {
         <View className="absolute inset-0 bg-orange-500/90 z-50 justify-center items-center p-6">
             <Text className="text-white font-pixel-chip text-shadow text-6xl mb-2 text-center">CONNECTING</Text>
             <Text className="text-white text-center text-lg mb-8 font-pixel-chip text-shadow">Trying to connect...</Text>
-            <ActivityIndicator size="large" color="#ffffff" className="mb-8" />
+            <Spinner className="mb-8" />
             <Button onPress={props.onCancel}>
                 Cancel
             </Button>
